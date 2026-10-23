@@ -1,0 +1,956 @@
+<!doctype html>
+<html lang="ms">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="Pendaftaran pasukan Kejohanan Bola Tampar Remaja B16 Malaysia 2026 (Borang O-2 dan O-2Bis)">
+<link rel="icon" href="flags/MY-14.svg">
+<title>Pendaftaran B16 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800;900&family=Figtree:wght@400;500;600;700&display=swap">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<style>
+/* Layout: hero is an indoor court seen from above (orange court, blue free zone, white lines) carrying the title and countdown;
+   below it, a board of 16 state cards each carrying its flag; the team form is a stack of sections with a sticky section switcher. */
+:root{
+  --paper:#eef2f8; --surface:#ffffff; --sunk:#e3e9f2; --rule:#cfd8e5;
+  --ink:#0f1d33; --muted:#566377;
+  --zone:#1b4c9e; --zone-deep:#123a7c; --court:#e46f24; --court-ink:#ffffff; --chalk:#ffffff;
+  --gold:#f6c343;
+  --ok:#11734a; --ok-bg:#d9f2e5; --warn:#94560a; --warn-bg:#fcecd0; --bad:#b3242c; --bad-bg:#fbe1e3;
+  --f-display:"Big Shoulders Display","Oswald","Arial Narrow",Impact,sans-serif;
+  --f-body:"Figtree",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --paper:#0c1626; --surface:#132137; --sunk:#1a2a44; --rule:#263a58; --ink:#e7eef8; --muted:#97a7bd;
+  --zone:#173f86; --zone-deep:#0f2d63; --court:#dd6a22; --gold:#f7cd5e;
+  --ok:#5fd59d; --ok-bg:#12382a; --warn:#f2b864; --warn-bg:#3b2a12; --bad:#ff8d93; --bad-bg:#3e1b20; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#0c1626; --surface:#132137; --sunk:#1a2a44; --rule:#263a58; --ink:#e7eef8; --muted:#97a7bd;
+  --zone:#173f86; --zone-deep:#0f2d63; --court:#dd6a22; --gold:#f7cd5e;
+  --ok:#5fd59d; --ok-bg:#12382a; --warn:#f2b864; --warn-bg:#3b2a12; --bad:#ff8d93; --bad-bg:#3e1b20; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.5;font-variant-numeric:tabular-nums}
+.wrap{max-width:1180px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+button{font:inherit;font-weight:600;border-radius:8px;border:1.5px solid var(--rule);background:var(--surface);color:var(--ink);padding:8px 16px;cursor:pointer;min-height:40px;transition:border-color .15s,background .15s}
+button:hover{border-color:var(--zone)}
+button:focus-visible,input:focus-visible,a:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+button.primary{background:var(--zone);color:#fff;border-color:var(--zone)}
+button.primary:hover{background:var(--zone-deep)}
+button.serve{background:var(--court);color:var(--court-ink);border-color:var(--court)}
+button.serve:hover{filter:brightness(1.06)}
+button:disabled{opacity:.5;cursor:not-allowed}
+
+/* ---------- Hero: the court ---------- */
+.hero{background:var(--zone);color:#fff;position:relative;overflow:hidden}
+.hero .wrap{position:relative;padding-block:22px 30px;display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);gap:28px;align-items:center}
+.topbar{display:flex;justify-content:space-between;align-items:center;gap:12px;grid-column:1/-1}
+.org{font-weight:600;font-size:14px;opacity:.9}
+.lang{display:inline-flex;border:1.5px solid rgba(255,255,255,.5);border-radius:999px;overflow:hidden}
+.lang button{background:transparent;color:#fff;border:0;border-radius:0;min-height:32px;padding:4px 14px;font-weight:700;font-size:13px}
+.lang button[aria-pressed="true"]{background:#fff;color:var(--zone)}
+.hero h1{font-family:var(--f-display);font-weight:900;font-size:clamp(40px,6.2vw,80px);line-height:.9;margin:6px 0 16px;overflow-wrap:anywhere;letter-spacing:-.005em;text-wrap:balance;text-transform:uppercase}
+.hero h1 .yr{display:block;color:var(--gold);white-space:nowrap}
+.hero .facts{display:flex;flex-wrap:wrap;gap:8px 22px;font-size:15px}
+.hero .facts span{display:flex;flex-direction:column}
+.hero .facts small{opacity:.75;font-size:12.5px}
+.hero .facts b{font-weight:600}
+.court{position:relative;aspect-ratio:2/1;max-width:100%;width:100%;background:var(--court);border:3px solid var(--chalk);border-radius:2px;box-shadow:0 0 0 14px rgba(255,255,255,.06)}
+.court::before{content:"";position:absolute;inset:0 auto 0 50%;width:4px;margin-left:-2px;background:var(--chalk)}
+.court .att{position:absolute;top:0;bottom:0;width:2px;background:var(--chalk);opacity:.45}
+.court .att.l{left:33.33%}.court .att.r{right:33.33%}
+.court .net{position:absolute;left:50%;top:-14px;bottom:-14px;width:10px;margin-left:-5px;background:repeating-linear-gradient(0deg,rgba(255,255,255,.95) 0 2px,transparent 2px 7px);border-left:2px solid #fff;border-right:2px solid #fff;opacity:.55}
+.court .count{position:absolute;inset:0 50% 0 0;display:grid;place-content:center;text-align:center;color:var(--court-ink)}
+.court .count b{font-family:var(--f-display);font-weight:900;font-size:clamp(56px,10vw,120px);line-height:.85}
+.court .count span{font-weight:600;font-size:14px;max-width:14ch;margin:4px auto 0}
+.court .side{position:absolute;inset:0 0 0 50%;display:grid;place-content:center;text-align:center;color:var(--court-ink);padding:8px}
+.court .side b{font-family:var(--f-display);font-weight:800;font-size:clamp(30px,5vw,54px);line-height:.9}
+.court .side span{font-size:13.5px;font-weight:600;opacity:.95}
+.ball{position:absolute;width:26px;height:26px;border-radius:50%;right:6%;top:9%;background:conic-gradient(from 20deg,var(--gold) 0 33%,#1f5fc4 0 66%,#fff 0);box-shadow:0 6px 0 rgba(0,0,0,.18)}
+@media (prefers-reduced-motion:no-preference){.ball{animation:serve 1.6s cubic-bezier(.3,.6,.4,1) .3s both}
+@keyframes serve{from{transform:translate(-260%,160%) rotate(-200deg);opacity:0}to{transform:none;opacity:1}}}
+@media (max-width:760px){.hero .wrap{grid-template-columns:1fr}.court{max-width:520px}}
+
+/* ---------- Board ---------- */
+main .wrap{padding-block:28px 64px;display:flex;flex-direction:column;gap:20px}
+.boardhead{display:flex;flex-wrap:wrap;gap:14px 20px;align-items:flex-end;justify-content:space-between}
+h2{font-family:var(--f-display);font-weight:800;font-size:clamp(30px,4vw,40px);line-height:1;margin:0;text-transform:uppercase;letter-spacing:.005em}
+.sub{color:var(--muted);font-size:14.5px;margin-top:4px;max-width:60ch}
+.ctrl{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.seg{display:inline-flex;background:var(--sunk);border-radius:10px;padding:3px;gap:3px}
+.seg button{border:0;background:transparent;border-radius:8px;min-height:36px;padding:6px 18px}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--zone);box-shadow:0 1px 2px rgba(15,29,51,.15)}
+.progress{display:grid;gap:8px}
+.progress .bar{display:grid;grid-template-columns:repeat(16,1fr);gap:4px}
+.progress .bar i{height:10px;border-radius:2px;background:var(--sunk)}
+.progress .bar i.draf{background:var(--gold)}
+.progress .bar i.hantar{background:var(--ok)}
+.progress .txt{display:flex;flex-wrap:wrap;gap:4px 18px;font-size:14px;color:var(--muted)}
+.progress .txt b{color:var(--ink);font-weight:700}
+.dot{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:6px;vertical-align:1px}
+.board{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
+.team{display:grid;grid-template-columns:auto 1fr auto;gap:2px 14px;align-items:center;text-align:left;padding:14px 16px;border-radius:12px;border:1.5px solid var(--rule);background:var(--surface);font-weight:400;min-height:82px}
+.team:hover{border-color:var(--zone);background:var(--surface)}
+.flag{grid-row:span 2;width:46px;height:30px;border-radius:3px;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 0 0 1px rgba(15,29,51,.18)}
+.flag i{flex:1}
+.team .nm{font-weight:700;font-size:15.5px;line-height:1.2}
+.team .cd{grid-row:span 2;font-family:var(--f-display);font-weight:800;font-size:28px;color:var(--muted);opacity:.55;line-height:1}
+.team .st{display:flex;gap:8px;align-items:center;font-size:13px;color:var(--muted)}
+.chip{white-space:nowrap;display:inline-flex;align-items:center;gap:5px;font-size:12.5px;font-weight:700;padding:2px 9px;border-radius:999px}
+.chip::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+.chip.none{background:var(--sunk);color:var(--muted)}
+.chip.draf{background:var(--warn-bg);color:var(--warn)}
+.chip.hantar{background:var(--ok-bg);color:var(--ok)}
+.notice{border-radius:10px;padding:12px 16px;font-size:14px;background:var(--surface);border:1.5px solid var(--rule)}
+.notice.warn{background:var(--warn-bg);color:var(--warn);border-color:transparent}
+.notice.bad{background:var(--bad-bg);color:var(--bad);border-color:transparent}
+.notice ul{margin:6px 0 0;padding-left:20px}
+
+/* ---------- Team form ---------- */
+.teamband{background:var(--zone);color:#fff}
+.teamband .wrap{padding-block:18px 0;display:flex;flex-direction:column;gap:16px}
+.teamtop{display:flex;flex-wrap:wrap;gap:14px;align-items:center;justify-content:space-between}
+.teamtop .who{display:flex;gap:16px;align-items:center;min-width:0}
+.teamtop .flag{width:64px;height:42px;grid-row:auto;box-shadow:0 0 0 2px rgba(255,255,255,.7)}
+.teamtop h2{font-size:clamp(32px,5vw,52px);color:#fff}
+.teamtop .cat{font-weight:600;opacity:.85;font-size:14px}
+.teamtop .meta{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:6px;font-size:13px;opacity:.95}
+.back{background:transparent;color:#fff;border-color:rgba(255,255,255,.5)}
+.back:hover{border-color:#fff}
+.tabs{display:flex;gap:2px;overflow-x:auto;scrollbar-width:none}
+.tabs a{color:#fff;text-decoration:none;padding:10px 16px 12px;font-weight:600;font-size:14.5px;border-radius:8px 8px 0 0;white-space:nowrap;opacity:.8;display:flex;gap:8px;align-items:center}
+.tabs a:hover{opacity:1;background:rgba(255,255,255,.08)}
+.tabs a .n{font-size:12px;background:rgba(255,255,255,.18);border-radius:999px;padding:1px 8px}
+.tabs a .n.done{background:var(--gold);color:var(--ink)}
+.tabbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:6;background:var(--zone)}
+#formView .wrap.body{padding-block:22px 40px;display:flex;flex-direction:column;gap:22px}
+section.block{background:var(--surface);border-radius:14px;border:1.5px solid var(--rule);padding:20px;display:flex;flex-direction:column;gap:14px;min-width:0;scroll-margin-top:70px}
+.blockhead{display:flex;flex-wrap:wrap;gap:4px 16px;align-items:baseline;justify-content:space-between}
+h3{font-family:var(--f-display);font-weight:800;font-size:28px;line-height:1;margin:0;text-transform:uppercase}
+.hint{color:var(--muted);font-size:13.5px;max-width:62ch}
+.scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:10px;border:1.5px solid var(--rule)}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{padding:4px;text-align:left;vertical-align:middle}
+tbody tr{border-top:1px solid var(--rule)}
+tbody tr:nth-child(even){background:color-mix(in srgb,var(--sunk) 45%,transparent)}
+thead th{background:var(--sunk);font-weight:700;font-size:12.5px;color:var(--muted);padding:8px 6px;line-height:1.2;white-space:nowrap}
+thead tr.grp th{text-align:center;font-size:12px;padding-bottom:0;font-weight:600}
+input{font:inherit;color:var(--ink);background:var(--surface);border:1.5px solid var(--rule);border-radius:7px;padding:7px 10px;min-height:38px;width:100%;min-width:0}
+td input{background:transparent;border-color:transparent;min-height:34px;padding:5px 7px}
+td input:hover{border-color:var(--rule)}
+td input:focus{background:var(--surface);border-color:var(--zone)}
+input.err,td input.err{border-color:var(--bad);background:var(--bad-bg)}
+td.num{text-align:center;width:36px;color:var(--muted);font-weight:600;font-size:13px}
+td.age{text-align:center;font-weight:700;white-space:nowrap}
+td.age.over{color:var(--bad)}
+.players td input{min-width:72px}
+.players td.w-no input{min-width:54px;text-align:center;font-family:var(--f-display);font-weight:800;font-size:19px;color:var(--court)}
+.players td.w-name input{min-width:230px;font-weight:600}
+.players td.w-ic input{min-width:150px;letter-spacing:.02em}
+.players td.w-dob input{min-width:140px}
+.players td.w-sm input{min-width:66px;text-align:center}
+.officials td input{min-width:190px}
+.officials td b{font-weight:600;white-space:nowrap}
+.uni{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px}
+.kit{border:1.5px solid var(--rule);border-radius:12px;padding:14px;display:grid;grid-template-columns:auto 1fr;gap:10px 14px;align-items:center}
+.kit .sw{grid-row:span 2;width:54px;height:62px;display:grid;justify-items:center;gap:2px}
+.kit .sw i{display:block;border:1.5px solid var(--rule)}
+.kit .sw .shirt{width:54px;height:34px;border-radius:12px 12px 4px 4px;background:var(--sunk)}
+.kit .sw .shorts{width:40px;height:22px;border-radius:3px 3px 8px 8px;background:var(--sunk)}
+.kit h4{grid-column:2;margin:0;font-family:var(--f-display);font-weight:800;font-size:20px;text-transform:uppercase}
+.kit .row{grid-column:2;display:grid;grid-template-columns:1fr 1fr;gap:8px}
+label.f{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted);font-weight:600}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px}
+.decl{margin:0;font-size:15px;max-width:66ch;line-height:1.6}
+.legend{font-size:13px;color:var(--muted)}
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0}
+[hidden]{display:none!important}
+img{max-width:100%}
+.authbtn{background:#fff;color:var(--zone);border-color:#fff;min-height:32px;padding:4px 14px;font-size:13px;border-radius:999px}
+.topbar .right{display:flex;gap:8px;align-items:center}
+dialog{border:0;border-radius:16px;padding:0;max-width:min(420px,calc(100vw - 32px));width:100%;background:var(--surface);color:var(--ink);box-shadow:0 20px 60px rgba(10,20,40,.35)}
+dialog::backdrop{background:rgba(10,25,50,.55)}
+.dlg{padding:22px;display:flex;flex-direction:column;gap:14px}
+.dlg h3{font-size:26px}
+.dlg select{font:inherit;color:var(--ink);background:var(--surface);border:1.5px solid var(--rule);border-radius:7px;padding:8px 10px;min-height:40px;width:100%}
+.dlg input{font-size:20px;letter-spacing:.3em;text-align:center}
+.dlg .err{color:var(--bad);font-weight:600;font-size:14px;min-height:1.2em}
+.dlg .row{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
+.team .lock{font-size:12px;color:var(--muted);font-weight:600}
+.flag{background:var(--sunk)}
+.flag img{display:block;width:100%;height:100%;object-fit:cover}
+.up{text-transform:uppercase}
+.finbar{display:flex;flex-wrap:wrap;gap:8px}
+.pill{display:inline-flex;gap:6px;align-items:center;font-size:13.5px;font-weight:600;padding:5px 12px;border-radius:999px;background:var(--sunk);color:var(--muted)}
+.pill b{color:var(--ink);font-weight:800}
+.pill.ok{background:var(--ok-bg);color:var(--ok)}.pill.ok b{color:var(--ok)}
+.pill.bad{background:var(--bad-bg);color:var(--bad)}.pill.bad b{color:var(--bad)}
+.fin{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:8px}
+.frow{display:grid;grid-template-columns:auto auto minmax(0,1fr) 68px auto;gap:10px;align-items:center;padding:8px 12px;border:1.5px solid var(--rule);border-radius:10px;background:var(--surface)}
+.frow.on{border-color:var(--zone);background:color-mix(in srgb,var(--zone) 7%,var(--surface))}
+.frow input[type=checkbox],.frow input[type=radio]{width:20px;height:20px;min-height:0;accent-color:var(--zone);margin:0}
+.frow .jn{font-family:var(--f-display);font-weight:800;font-size:22px;color:var(--court);min-width:30px;text-align:center}
+.frow .pn{font-weight:600;font-size:14px;line-height:1.2;overflow-wrap:anywhere}
+.frow select{font:inherit;font-size:13.5px;font-weight:600;color:var(--ink);background:var(--surface);border:1.5px solid var(--rule);border-radius:7px;padding:5px 6px;min-height:34px}
+.frow .cap{display:flex;gap:4px;align-items:center;font-size:12.5px;font-weight:700;color:var(--muted)}
+.frow:not(.on) select,.frow:not(.on) .cap{opacity:.35}
+.empty{padding:18px;border:1.5px dashed var(--rule);border-radius:10px;color:var(--muted);text-align:center}
+.cardsub{font-size:12px;color:var(--muted);font-weight:600}
+.sticky-actions{position:sticky;bottom:0;z-index:7;background:var(--surface);border-top:1.5px solid var(--rule);padding-bottom:env(safe-area-inset-bottom,0px)}
+.sticky-actions .wrap{padding-block:12px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
+.status-line{font-size:13.5px;color:var(--muted);font-weight:500}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(84px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--paper);padding:10px 18px;border-radius:10px;font-weight:700;z-index:20;max-width:calc(100% - 32px)}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--zone)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+
+
+<div id="boardView">
+  <header class="hero">
+    <div class="wrap">
+      <div class="topbar">
+        <span class="org" data-i18n="org"></span>
+        <div class="right">
+        <button type="button" class="authbtn" id="authBtn"></button>
+        <div class="lang" role="group" aria-label="Language">
+          <button type="button" id="langEN" lang="en">EN</button>
+          <button type="button" id="langMS" lang="ms">BM</button>
+        </div>
+        </div>
+      </div>
+      <div>
+        <h1><span data-i18n="title1"></span><span class="yr" data-i18n="title2"></span></h1>
+        <div class="facts">
+          <span><small data-i18n="f_dates"></small><b>14–18 Nov 2026</b></span>
+          <span><small data-i18n="f_venue"></small><b>Kota Kinabalu, Sabah</b></span>
+          <span><small data-i18n="f_close"></small><b data-i18n="deadline"></b></span>
+        </div>
+      </div>
+      <div class="court" aria-hidden="false">
+        <i class="att l"></i><i class="att r"></i><i class="net"></i><span class="ball"></span>
+        <div class="count"><b id="cdN">–</b><span id="cdT"></span></div>
+        <div class="side"><b id="sideN">0/32</b><span data-i18n="sideT"></span></div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div class="wrap">
+      <div class="boardhead">
+        <div>
+          <h2 data-i18n="teamsH"></h2>
+          <div class="sub" data-i18n="teamsSub"></div>
+        </div>
+        <div class="ctrl">
+          <div class="seg" role="group" aria-label="Category">
+            <button type="button" id="segL" aria-pressed="true" data-i18n="men"></button>
+            <button type="button" id="segP" aria-pressed="false" data-i18n="women"></button>
+          </div>
+          <button type="button" id="exportAll" data-i18n="exportAll"></button>
+        </div>
+      </div>
+      <div class="progress"><div class="bar" id="pbar"></div><div class="txt" id="summary"></div></div>
+      <div id="dbNotice" class="notice" hidden></div>
+      <div class="board" id="board"></div>
+    </div>
+  </main>
+</div>
+
+<div id="formView" hidden>
+  <div class="teamband">
+    <div class="wrap">
+      <div class="teamtop">
+        <div class="who">
+          <span class="flag" id="fFlag"></span>
+          <div>
+            <div class="cat" id="fSex"></div>
+            <h2 id="fState"></h2>
+            <div class="meta"><span class="chip none" id="fChip"></span><span id="fUpdated"></span></div>
+          </div>
+        </div>
+        <button type="button" class="back" id="backBtn"></button>
+      </div>
+    </div>
+  </div>
+  <div class="tabbar">
+    <nav class="wrap tabs" aria-label="Form sections">
+      <a href="#sec-players"><span data-i18n="playersH"></span><span class="n" id="nP"></span></a>
+      <a href="#sec-final"><span data-i18n="finH"></span><span class="n" id="nF"></span></a>
+      <a href="#sec-off"><span data-i18n="offH"></span><span class="n" id="nO"></span></a>
+      <a href="#sec-uni"><span data-i18n="uniH"></span><span class="n" id="nU"></span></a>
+      <a href="#sec-decl"><span data-i18n="declH"></span><span class="n" id="nD"></span></a>
+    </nav>
+  </div>
+  <div class="wrap body">
+    <div id="remoteNotice" class="notice warn" hidden><span data-i18n="remote"></span> <button type="button" id="reloadRemote" style="margin-left:8px" data-i18n="reload"></button></div>
+    <div id="valNotice" class="notice bad" hidden></div>
+
+    <section class="block" id="sec-players">
+      <div class="blockhead"><h3 data-i18n="playersH"></h3><span class="hint" data-i18n="playersSub"></span></div>
+      <div class="scroll">
+        <table class="players">
+          <thead>
+            <tr class="grp"><th colspan="4"></th><th colspan="5" data-i18n="g_personal"></th><th colspan="2" data-i18n="g_reach"></th><th colspan="3" data-i18n="g_matches"></th></tr>
+            <tr><th>#</th><th data-i18n="c_no"></th><th data-i18n="c_name"></th><th data-i18n="c_chinese"></th><th data-i18n="c_ic"></th><th data-i18n="c_dob"></th><th data-i18n="c_age"></th><th data-i18n="c_weight"></th><th data-i18n="c_height"></th><th data-i18n="c_spike"></th><th data-i18n="c_block"></th><th data-i18n="c_intl"></th><th data-i18n="c_natl"></th><th data-i18n="c_other"></th></tr>
+          </thead>
+          <tbody id="pBody"></tbody>
+        </table>
+      </div>
+      <div class="legend" data-i18n="ageNote"></div>
+    </section>
+
+    <section class="block" id="sec-final">
+      <div class="blockhead"><h3 data-i18n="finH"></h3><span class="hint" data-i18n="finSub"></span></div>
+      <div class="finbar" id="finBar"></div>
+      <div class="fin" id="finList"></div>
+      <div class="legend" data-i18n="posNote"></div>
+    </section>
+
+    <section class="block" id="sec-off">
+      <div class="blockhead"><h3 data-i18n="offH"></h3></div>
+      <div class="scroll">
+        <table class="officials">
+          <thead><tr><th>#</th><th data-i18n="o_func"></th><th data-i18n="o_name"></th><th data-i18n="o_tel"></th></tr></thead>
+          <tbody id="oBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="block" id="sec-uni">
+      <div class="blockhead"><h3 data-i18n="uniH"></h3><span class="hint" data-i18n="uniHint"></span></div>
+      <div class="uni">
+        <div class="kit">
+          <div class="sw"><i class="shirt" id="sw_shirt1"></i><i class="shorts" id="sw_shorts1"></i></div>
+          <h4 data-i18n="u_1"></h4>
+          <div class="row">
+            <label class="f"><span data-i18n="u_shirt"></span><input id="u_shirt1" class="up" autocapitalize="characters"></label>
+            <label class="f"><span data-i18n="u_shorts"></span><input id="u_shorts1" class="up" autocapitalize="characters"></label>
+          </div>
+        </div>
+        <div class="kit">
+          <div class="sw"><i class="shirt" id="sw_shirt2"></i><i class="shorts" id="sw_shorts2"></i></div>
+          <h4 data-i18n="u_2"></h4>
+          <div class="row">
+            <label class="f"><span data-i18n="u_shirt"></span><input id="u_shirt2" class="up" autocapitalize="characters"></label>
+            <label class="f"><span data-i18n="u_shorts"></span><input id="u_shorts2" class="up" autocapitalize="characters"></label>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="block" id="sec-decl">
+      <div class="blockhead"><h3 data-i18n="declH"></h3></div>
+      <p class="decl" data-i18n="decl"></p>
+      <div class="grid2">
+        <label class="f"><span data-i18n="sec"></span><input id="secretary" class="up" autocapitalize="characters"></label>
+        <label class="f"><span data-i18n="pres"></span><input id="president" class="up" autocapitalize="characters"></label>
+      </div>
+    </section>
+  </div>
+  <div class="sticky-actions">
+    <div class="wrap">
+      <div class="status-line" id="saveState"></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button type="button" id="dlOne" data-i18n="dlOne"></button>
+        <button type="button" class="primary" id="saveBtn" data-i18n="save"></button>
+        <button type="button" class="serve" id="submitBtn" data-i18n="submit"></button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast" hidden></div>
+<dialog id="loginDlg">
+  <form class="dlg" id="loginForm" method="dialog">
+    <h3 data-i18n="l_title"></h3>
+    <div class="hint" data-i18n="l_hint"></div>
+    <label class="f"><span data-i18n="l_state"></span><select id="lCode"></select></label>
+    <label class="f"><span data-i18n="l_pin"></span><input id="lPin" type="password" inputmode="numeric" autocomplete="current-password" maxlength="12" required></label>
+    <div class="err" id="lErr" role="alert"></div>
+    <div class="row"><button type="button" id="lCancel" data-i18n="l_cancel"></button><button type="submit" class="primary" id="lGo" data-i18n="l_go"></button></div>
+  </form>
+</dialog>
+<script>
+const STATES=[
+ ["JHR","Johor"],["KDH","Kedah"],["KTN","Kelantan"],["MLK","Melaka"],["NSN","Negeri Sembilan"],["PHG","Pahang"],
+ ["PRK","Perak"],["PLS","Perlis"],["PNG","Pulau Pinang"],["SBH","Sabah"],["SWK","Sarawak"],["SGR","Selangor"],
+ ["TRG","Terengganu"],["KUL","WP Kuala Lumpur"],["LBN","WP Labuan"],["PJY","WP Putrajaya"]];
+const OFF_EN=["TEAM MANAGER","HEAD COACH","ASSISTANT COACH 1","ASSISTANT COACH 2","THERAPIST / TRAINER","REFEREE"];
+const ISO={JHR:"01",KDH:"02",KTN:"03",MLK:"04",NSN:"05",PHG:"06",PNG:"07",PRK:"08",PLS:"09",SGR:"10",TRG:"11",SBH:"12",SWK:"13",KUL:"14",LBN:"15",PJY:"16"};
+const COLOURS={kuning:"#f5c518",hitam:"#151515",putih:"#ffffff",merah:"#d0212b",biru:"#1f5fc4","biru tua":"#14254f","biru laut":"#14254f","biru muda":"#7cc0ee",hijau:"#1f8a4c",oren:"#ef7d21",jingga:"#ef7d21",ungu:"#6c3cb4",kelabu:"#8a8f98","merah jambu":"#ef7fb1",emas:"#c9a227",perak:"#c0c4ca",coklat:"#7a4a26",maroon:"#7b1a2c",navy:"#14254f"};
+function cssColour(v){v=(v||"").trim().toLowerCase();if(!v)return "";if(COLOURS[v])return COLOURS[v];const first=v.split(/[\/,&]| and | dan /)[0].trim();if(COLOURS[first])return COLOURS[first];
+ try{const c=first.replace(/\s+/g,"");if(CSS.supports("color",c))return c}catch(e){}return ""}
+function paintFlag(el,code,name){el.innerHTML="";const i=document.createElement("img");i.src="flags/MY-"+ISO[code]+".svg";i.alt=(name||code);el.appendChild(i)}
+function up(e){const a=e.selectionStart,b=e.selectionEnd,u=e.value.toUpperCase();if(u!==e.value){e.value=u;try{e.setSelectionRange(a,b)}catch(_){}}return u}
+function circ(n){n=parseInt(n,10);if(!(n>0))return String(n||"");if(n<=20)return String.fromCharCode(0x2460+n-1);if(n<=35)return String.fromCharCode(0x3251+n-21);if(n<=50)return String.fromCharCode(0x32B1+n-36);return "("+n+")"}
+const POS=["OH","OP","MB","S","L"];
+const NPLAYERS=20, MINPLAYERS=6;
+const PFIELDS=["no","name","chinese","ic","dob","weight","height","spike","block","intl","natl","other","pos"];
+const TOURN_START=new Date(2026,10,14);
+const $=id=>document.getElementById(id);
+
+const I18N={
+en:{
+ org:"Malaysia Volleyball Association, team registration (Forms O-2 and O-2Bis)",
+ title1:"Malaysia Youth Volleyball Championship", title2:"Under-16 2026",
+ f_dates:"Competition", f_venue:"Venue", f_close:"Entries close", deadline:"1 October 2026",
+ cd:n=>n>1?"days to the first serve":n===1?"day to the first serve":n===0?"first serve is today":"competition has started",
+ sideT:"team entries submitted", uniHint:"Type each colour in words. The kit preview fills in for common colours.",
+ teamsH:"State teams", teamsSub:"Select a team and category to fill in Forms O-2 and O-2Bis in one go.",
+ men:"Men", women:"Women", exportAll:"Download all teams (ZIP)",
+ st_none:"Not started", st_draf:"Draft", st_hantar:"Submitted",
+ players:n=>`${n} player${n===1?"":"s"}`,
+ sumSub:sx=>`of 16 ${sx==="L"?"men's":"women's"} teams`,
+ sumH:"submitted", sumD:"draft", sumN:"not started",
+ catMen:"Men's category", catWomen:"Women's category",
+ back:"← Back to teams", backConfirm:"Discard changes? Click again",
+ updated:t=>"Last updated "+t,
+ remote:"Another user has updated this team.", reload:"Reload",
+ playersH:"Players", playersSub:"Full name and IC number exactly as on the identification card. Birth date fills in from the IC number.",
+ g_personal:"Personal data", g_reach:"Highest reach (cm)", g_matches:"Matches played for state / national team",
+ c_no:"Shirt No.", c_name:"Full name", c_chinese:"Name in Chinese", c_ic:"IC No.", c_dob:"Date of birth", c_age:"Age*",
+ c_weight:"Weight (kg)", c_height:"Height (cm)", c_spike:"Spike", c_block:"2-hand block", c_intl:"International", c_natl:"National", c_other:"Other",
+ ageNote:"* Age on 14 November 2026, the first day of competition. Red means 16 or older: check eligibility.",
+ offH:"Team officials", o_func:"Function", o_name:"Full name (as on IC)", o_tel:"Telephone",
+ offs:["Team Manager","Head Coach","Assistant Coach 1","Assistant Coach 2","Therapist / Trainer","Referee"],
+ uniH:"Colour of 2 uniforms", u_piece:"Piece", u_1:"Set 1", u_2:"Set 2", u_shirt:"Shirt", u_shorts:"Shorts",
+ ph_c1:"e.g. Yellow", ph_c2:"e.g. Black", ph_name:"Full name", ph_ic:"YYMMDD-PB-####", ph_tel:"+60 1X-XXX XXXX",
+ declH:"Association declaration",
+ decl:"We, the undersigned, declare that, in accordance with the present regulations, the registered players are qualified for MAVA competitions.",
+ sec:"Honorary Secretary", pres:"President",
+ dlOne:"Download O-2 + O-2Bis (Excel)",
+ login:"Sign in", logout:c=>`Sign out (${c})`, l_title:"Sign in", l_hint:"Use the PIN the organiser gave your state. Each PIN opens that state's teams only.",
+ l_state:"State", l_admin:"Organiser (admin)", l_pin:"PIN", l_go:"Sign in", l_cancel:"Cancel", l_bad:"Wrong PIN. Check it and try again.",
+ l_locked:"Too many wrong PINs. Wait 15 minutes, then try again.", l_net:"Cannot reach the server. Check your internet connection.",
+ lockTxt:"Sign in to open", ss_auto:t=>"Saved automatically "+t, ss_local:"Changes kept on this device. Saving to the server…",
+ ss_conflict:"Someone else saved this team after you opened it. Reload to see their version; your changes are kept on this device.",
+ restored:"Unsaved changes from this device were restored.", t_dlok:"File downloaded",
+ finH:"Final team (O-2Bis)", finSub:"Pick up to 14 of the registered players, give each a position and mark the captain. The O-2Bis sheet fills in from this.",
+ posNote:"OH = Outside Hitter, OP = Opposite, MB = Middle Blocker, S = Setter, L = Libero. At most 2 liberos.",
+ fin_sel:"selected", fin_cap:"captain", fin_lib:"libero", fin_empty:"Enter player names in the Players section first. They will appear here to pick for O-2Bis.",
+ fin_pick:n=>`Include ${n} in O-2Bis`, c_pos:"Position", c_cap:"Captain", pos_pick:"Position",
+ pos_OH:"Outside Hitter", pos_OP:"Opposite", pos_MB:"Middle Blocker", pos_S:"Setter", pos_L:"Libero",
+ v_fmax:n=>`O-2Bis allows 14 players at most (currently ${n}).`, v_fcap:"O-2Bis: mark exactly one captain among the selected players.",
+ v_fpos:(no,n)=>`O-2Bis: choose a position for #${no} ${n}.`, v_flib:"O-2Bis allows 2 liberos at most.",
+ t_building:"Preparing files for all teams…",
+ x_hdrFin:["Code","State","Category","Shirt No.","Position","Captain","Name","IC No.","Date of birth"], x_sumFile:"Summary - all teams.xlsx", save:"Save draft", submit:"Submit form",
+ ss_none:"No changes", ss_dirty:"Unsaved changes", ss_saved:"All changes saved", ss_saving:"Saving…",
+ ss_ro:"You can view this form only. Ask the organiser for Contributor access.", ss_fail:"Could not save. Check your connection and try again.",
+ t_saved:"Draft saved", t_sub:"Form submitted", t_noxl:"Excel export is still loading. Try again in a moment.", t_nodl:"Downloads are not available in this view", t_dlfail:"Download failed: ",
+ v_head:"The form cannot be submitted yet.", v_more:n=>`…and ${n} more.`,
+ v_min:(m,n)=>`Register at least ${m} players (currently ${n}).`,
+ v_pl:i=>`Player ${i}`, v_name:"name is missing.", v_ic:"IC number must have 12 digits.", v_no:"shirt number is missing.",
+ v_dup:(no,j)=>`shirt number ${no} is already used by player ${j}.`, v_offn:"name is missing.", v_offt:"telephone is missing.",
+ v_uni:"Shirt colours for set 1 and set 2 are incomplete.",
+ n_nodb:"The database cannot be reached in this view. Sign in to Claude to view and save forms.",
+ n_ro:"You can view only. Ask the organiser for Contributor access to fill in forms.",
+ n_err:c=>`Could not reach the server (${c}). Check your connection; the page retries automatically.`,
+ a_no:i=>`Player ${i} shirt number`, a_name:i=>`Player ${i} name`, a_cn:i=>`Player ${i} Chinese name`, a_ic:i=>`Player ${i} IC number`, a_dob:i=>`Player ${i} date of birth`,
+ x_sum:"Summary", x_all:"All players", x_hdrSum:["Code","State","Category","Status","Players","O-2Bis","Manager","Manager tel.","Head coach","Coach tel.","Last updated"],
+ x_hdrAll:["Code","State","Category","Shirt No.","Name","Chinese name","IC No.","Date of birth","Age (14/11/2026)","Weight (kg)","Height (cm)","Spike","Block","International","National","Other"],
+ x_file1:(c,sx)=>`O-2 & O-2Bis U16 2026 - ${c} ${sx==="L"?"Men":"Women"}.xlsx`, x_fileAll:"U16 2026 Registration - All teams.zip",
+ locale:"en-GB"},
+ms:{
+ org:"Persatuan Bola Tampar Malaysia, pendaftaran pasukan (Borang O-2 dan O-2Bis)",
+ title1:"Kejohanan Bola Tampar Remaja Malaysia", title2:"Bawah 16 2026",
+ f_dates:"Pertandingan", f_venue:"Lokasi", f_close:"Tarikh tutup", deadline:"1 Oktober 2026",
+ cd:n=>n>0?"hari lagi ke servis pertama":n===0?"servis pertama hari ini":"kejohanan sedang berlangsung",
+ sideT:"penyertaan pasukan dihantar", uniHint:"Taip warna dalam perkataan. Pratonton pakaian terisi untuk warna biasa.",
+ teamsH:"Pasukan negeri", teamsSub:"Pilih pasukan dan kategori untuk isi Borang O-2 dan O-2Bis sekali gus.",
+ men:"Lelaki", women:"Wanita", exportAll:"Muat turun semua pasukan (ZIP)",
+ st_none:"Belum mula", st_draf:"Draf", st_hantar:"Dihantar",
+ players:n=>`${n} pemain`,
+ sumSub:sx=>`daripada 16 pasukan ${sx==="L"?"lelaki":"wanita"}`,
+ sumH:"dihantar", sumD:"draf", sumN:"belum mula",
+ catMen:"Kategori lelaki", catWomen:"Kategori wanita",
+ back:"← Kembali ke senarai", backConfirm:"Buang perubahan? Klik sekali lagi",
+ updated:t=>"Kemas kini terakhir "+t,
+ remote:"Pengguna lain telah mengemas kini pasukan ini.", reload:"Muat semula",
+ playersH:"Pemain", playersSub:"Nama penuh dan No. KP seperti dalam kad pengenalan. Tarikh lahir diisi automatik daripada No. KP.",
+ g_personal:"Data peribadi", g_reach:"Capaian tertinggi (cm)", g_matches:"Perlawanan untuk negeri / kebangsaan",
+ c_no:"No. baju", c_name:"Nama penuh", c_chinese:"Nama Cina", c_ic:"No. KP", c_dob:"Tarikh lahir", c_age:"Umur*",
+ c_weight:"Berat (kg)", c_height:"Tinggi (cm)", c_spike:"Spike", c_block:"Block 2 tangan", c_intl:"Antarabangsa", c_natl:"Kebangsaan", c_other:"Lain-lain",
+ ageNote:"* Umur pada 14 November 2026, hari pertama kejohanan. Merah bermaksud 16 tahun ke atas: semak kelayakan.",
+ offH:"Pegawai pasukan", o_func:"Jawatan", o_name:"Nama penuh (seperti KP)", o_tel:"No. telefon",
+ offs:["Pengurus Pasukan","Jurulatih Utama","Penolong Jurulatih 1","Penolong Jurulatih 2","Terapis / Jurulatih Kecergasan","Pengadil"],
+ uniH:"Warna 2 set pakaian", u_piece:"Pakaian", u_1:"Set 1", u_2:"Set 2", u_shirt:"Baju", u_shorts:"Seluar",
+ ph_c1:"cth. Kuning", ph_c2:"cth. Hitam", ph_name:"Nama penuh", ph_ic:"YYMMDD-PB-####", ph_tel:"+60 1X-XXX XXXX",
+ declH:"Pengesahan persatuan",
+ decl:"Kami yang bertandatangan di bawah mengesahkan bahawa, mengikut peraturan semasa, pemain yang didaftarkan layak untuk pertandingan MAVA.",
+ sec:"Setiausaha Kehormat", pres:"Presiden",
+ dlOne:"Muat turun O-2 + O-2Bis (Excel)",
+ login:"Log masuk", logout:c=>`Log keluar (${c})`, l_title:"Log masuk", l_hint:"Guna PIN yang diberi penganjur kepada negeri anda. Setiap PIN hanya membuka pasukan negeri itu.",
+ l_state:"Negeri", l_admin:"Penganjur (admin)", l_pin:"PIN", l_go:"Log masuk", l_cancel:"Batal", l_bad:"PIN salah. Semak dan cuba lagi.",
+ l_locked:"Terlalu banyak PIN salah. Tunggu 15 minit, kemudian cuba lagi.", l_net:"Tidak dapat menghubungi pelayan. Semak sambungan internet.",
+ lockTxt:"Log masuk untuk buka", ss_auto:t=>"Disimpan automatik "+t, ss_local:"Perubahan disimpan dalam peranti ini. Sedang menyimpan ke pelayan…",
+ ss_conflict:"Orang lain telah menyimpan pasukan ini selepas anda membukanya. Muat semula untuk lihat versi mereka; perubahan anda kekal dalam peranti ini.",
+ restored:"Perubahan yang belum disimpan dalam peranti ini telah dipulihkan.", t_dlok:"Fail dimuat turun",
+ finH:"Pasukan akhir (O-2Bis)", finSub:"Pilih sehingga 14 daripada pemain berdaftar, tetapkan posisi dan tandakan kapten. Helaian O-2Bis diisi daripada sini.",
+ posNote:"OH = Outside Hitter, OP = Opposite, MB = Middle Blocker, S = Setter, L = Libero. Maksimum 2 libero.",
+ fin_sel:"dipilih", fin_cap:"kapten", fin_lib:"libero", fin_empty:"Isi nama pemain di bahagian Pemain dahulu. Nama akan muncul di sini untuk dipilih ke O-2Bis.",
+ fin_pick:n=>`Masukkan ${n} ke O-2Bis`, c_pos:"Posisi", c_cap:"Kapten", pos_pick:"Posisi",
+ pos_OH:"Outside Hitter", pos_OP:"Opposite", pos_MB:"Middle Blocker", pos_S:"Setter", pos_L:"Libero",
+ v_fmax:n=>`O-2Bis maksimum 14 pemain (sekarang ${n}).`, v_fcap:"O-2Bis: tandakan seorang kapten sahaja dalam pemain yang dipilih.",
+ v_fpos:(no,n)=>`O-2Bis: pilih posisi untuk #${no} ${n}.`, v_flib:"O-2Bis maksimum 2 libero.",
+ t_building:"Menyediakan fail semua pasukan…",
+ x_hdrFin:["Kod","Negeri","Kategori","No. baju","Posisi","Kapten","Nama","No. KP","Tarikh lahir"], x_sumFile:"Ringkasan - semua pasukan.xlsx", save:"Simpan draf", submit:"Hantar borang",
+ ss_none:"Tiada perubahan", ss_dirty:"Ada perubahan belum disimpan", ss_saved:"Semua perubahan disimpan", ss_saving:"Menyimpan…",
+ ss_ro:"Anda hanya boleh melihat borang ini. Minta penganjur beri akses Contributor.", ss_fail:"Gagal menyimpan. Semak sambungan internet dan cuba lagi.",
+ t_saved:"Draf disimpan", t_sub:"Borang dihantar", t_noxl:"Fungsi Excel belum dimuatkan. Cuba sebentar lagi.", t_nodl:"Muat turun tidak tersedia di paparan ini", t_dlfail:"Muat turun gagal: ",
+ v_head:"Borang belum boleh dihantar.", v_more:n=>`…dan ${n} lagi.`,
+ v_min:(m,n)=>`Daftar sekurang-kurangnya ${m} pemain (sekarang ${n}).`,
+ v_pl:i=>`Pemain ${i}`, v_name:"nama belum diisi.", v_ic:"No. KP mesti 12 digit.", v_no:"no. baju belum diisi.",
+ v_dup:(no,j)=>`no. baju ${no} sudah digunakan oleh pemain ${j}.`, v_offn:"nama belum diisi.", v_offt:"no. telefon belum diisi.",
+ v_uni:"Warna baju set 1 dan set 2 belum lengkap.",
+ n_nodb:"Pangkalan data tidak dapat dicapai di paparan ini. Log masuk ke Claude untuk melihat dan menyimpan borang.",
+ n_ro:"Anda hanya boleh melihat. Minta penganjur beri akses Contributor untuk mengisi borang.",
+ n_err:c=>`Tidak dapat menghubungi pelayan (${c}). Semak sambungan; laman akan cuba semula sendiri.`,
+ a_no:i=>`No. baju pemain ${i}`, a_name:i=>`Nama pemain ${i}`, a_cn:i=>`Nama Cina pemain ${i}`, a_ic:i=>`No. KP pemain ${i}`, a_dob:i=>`Tarikh lahir pemain ${i}`,
+ x_sum:"Ringkasan", x_all:"Semua pemain", x_hdrSum:["Kod","Negeri","Kategori","Status","Bil. pemain","O-2Bis","Pengurus","Tel. pengurus","Jurulatih utama","Tel. jurulatih","Kemas kini"],
+ x_hdrAll:["Kod","Negeri","Kategori","No. baju","Nama","Nama Cina","No. KP","Tarikh lahir","Umur (14/11/2026)","Berat (kg)","Tinggi (cm)","Spike","Block","Antarabangsa","Kebangsaan","Lain-lain"],
+ x_file1:(c,sx)=>`O-2 & O-2Bis B16 2026 - ${c} ${sx==="L"?"Lelaki":"Wanita"}.xlsx`, x_fileAll:"Pendaftaran B16 2026 - Semua pasukan.zip",
+ locale:"ms-MY"}};
+let lang="en";try{const s=localStorage.getItem("lang");if(s==="ms"||s==="en")lang=s}catch(e){}
+const T=k=>I18N[lang][k];
+
+const SB_URL="https://xfvvwsoljdpzwmbrrylk.supabase.co",SB_KEY="sb_publishable_iczeKd9U8-PNbRmfLHxpJw_X85WPZP0";
+async function api(fn,body){
+  const r=await fetch(SB_URL+"/rest/v1/rpc/"+fn,{method:"POST",headers:{"apikey":SB_KEY,"Content-Type":"application/json"},body:JSON.stringify(body||{})});
+  if(!r.ok)throw new Error("http_"+r.status);
+  return r.json();
+}
+let meta={}, full={}, session=null, sex="L", current=null, form=null, base=null, dirty=false, readOnly=false, noticeKey=null, noticeArg=null, autoT=null, saving=false;
+try{session=JSON.parse(sessionStorage.getItem("b16s")||"null")}catch(e){}
+const canOpen=code=>!!session&&(session.role==="admin"||session.code===code);
+const LKEY=id=>"b16draft:"+id;
+function keepLocal(){if(!current)return;try{localStorage.setItem(LKEY(teamId(current.code,current.sex)),JSON.stringify({form,base,at:Date.now()}))}catch(e){}}
+function dropLocal(id){try{localStorage.removeItem(LKEY(id))}catch(e){}}
+function readLocal(id){try{return JSON.parse(localStorage.getItem(LKEY(id))||"null")}catch(e){return null}}
+
+function applyLang(){
+  document.documentElement.lang=lang;
+  document.querySelectorAll("[data-i18n]").forEach(e=>{e.textContent=T(e.dataset.i18n)});
+  $("langEN").setAttribute("aria-pressed",String(lang==="en"));$("langMS").setAttribute("aria-pressed",String(lang==="ms"));
+  $("backBtn").textContent=T("back");
+  $("u_shirt1").placeholder=T("ph_c1");$("u_shirt2").placeholder=T("ph_c2");$("u_shorts1").placeholder=T("ph_c2");$("u_shorts2").placeholder=T("ph_c1");
+  renderCountdown();
+  $("secretary").placeholder=T("ph_name");$("president").placeholder=T("ph_name");
+  if(noticeKey){const f=T(noticeKey);$("dbNotice").textContent=typeof f==="function"?f(noticeArg):f}
+  renderAuth();
+  if(current) renderForm(); else renderBoard();
+}
+function setLang(l){lang=l;try{localStorage.setItem("lang",l)}catch(e){}$("valNotice").hidden=true;applyLang()}
+$("langEN").addEventListener("click",()=>setLang("en"));
+$("langMS").addEventListener("click",()=>setLang("ms"));
+
+function emptyForm(code,name,sx){
+  return {state:name,code,sex:sx,status:"draf",
+    players:Array.from({length:NPLAYERS},()=>Object.fromEntries(PFIELDS.map(k=>[k,""]))),
+    officials:OFF_EN.map(()=>({name:"",tel:""})),
+    uniform:{shirt1:"",shirt2:"",shorts1:"",shorts2:""},secretary:"",president:""};
+}
+function normalise(d,code,name,sx){
+  const f=emptyForm(code,name,sx); if(!d) return f;
+  const o=JSON.parse(JSON.stringify(d));
+  (o.players||[]).forEach((p,i)=>{if(i<NPLAYERS){PFIELDS.forEach(k=>f.players[i][k]=p[k]??"");f.players[i].final=!!p.final;f.players[i].captain=!!p.captain}});
+  (o.officials||[]).forEach((p,i)=>{if(i<6){f.officials[i].name=p.name||"";f.officials[i].tel=p.tel||""}});
+  Object.assign(f.uniform,o.uniform||{});
+  f.secretary=o.secretary||"";f.president=o.president||"";f.status=o.status||"draf";
+  f.updatedAt=o.updatedAt||null;f.submittedAt=o.submittedAt||null;
+  return f;
+}
+const teamId=(code,sx)=>code+"-"+sx;
+const filledPlayers=f=>f.players.filter(p=>p.name.trim()||p.ic.trim());
+
+function icDigits(v){return (v||"").replace(/\D/g,"")}
+function formatIC(v){const d=icDigits(v).slice(0,12);if(d.length<=6)return d;if(d.length<=8)return d.slice(0,6)+"-"+d.slice(6);return d.slice(0,6)+"-"+d.slice(6,8)+"-"+d.slice(8)}
+function dobFromIC(v){
+  const d=icDigits(v); if(d.length<6) return "";
+  const yy=+d.slice(0,2),mm=+d.slice(2,4),dd=+d.slice(4,6);
+  if(mm<1||mm>12||dd<1||dd>31) return "";
+  const yr=yy<=26?2000+yy:1900+yy;
+  return `${yr}-${String(mm).padStart(2,"0")}-${String(dd).padStart(2,"0")}`;
+}
+function ageAt(dob){
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(dob)) return null;
+  const [y,m,d]=dob.split("-").map(Number);
+  let a=TOURN_START.getFullYear()-y;
+  if(TOURN_START.getMonth()+1<m||(TOURN_START.getMonth()+1===m&&TOURN_START.getDate()<d)) a--;
+  return a;
+}
+function fmtTime(ts){if(!ts)return "";try{return new Date(ts).toLocaleString(T("locale"),{day:"numeric",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"})}catch(e){return ""}}
+const stKey=s=>"st_"+s;
+
+function renderBoard(){
+  ["L","P"].forEach(s=>$("seg"+s).setAttribute("aria-pressed",String(sex===s)));
+  const b=$("board"); b.innerHTML="";
+  let cnt={none:0,draf:0,hantar:0};
+  STATES.forEach(([code,name])=>{
+    const t=meta[teamId(code,sex)];
+    const st=t?(t.status==="hantar"?"hantar":"draf"):"none";
+    cnt[st]++;
+    const btn=document.createElement("button");btn.type="button";btn.className="team";
+    const n=t?t.players:0;
+    btn.innerHTML=`<span class="flag"></span><span class="nm"></span><span class="cd"></span><span class="st"><span class="chip ${st}"></span><span class="cnt"></span></span>`;
+    paintFlag(btn.querySelector(".flag"),code,name);btn.querySelector(".cd").textContent=code;
+    btn.querySelector(".nm").textContent=name;
+    btn.querySelector(".chip").textContent=T(stKey(st));
+    btn.querySelector(".cnt").textContent=t?T("players")(n)+(t.finals?" · O-2Bis "+t.finals+"/14":""):"";
+    if(!canOpen(code)){const l=document.createElement("span");l.className="lock";l.textContent=T("lockTxt");btn.querySelector(".st").appendChild(l)}
+    btn.addEventListener("click",()=>{if(canOpen(code))openTeam(code,name,sex);else openLogin(code,()=>openTeam(code,name,sex))});
+    b.appendChild(btn);
+  });
+  const pb=$("pbar");pb.innerHTML="";
+  ["hantar","draf","none"].forEach(k=>{for(let i=0;i<cnt[k];i++){const e=document.createElement("i");e.className=k;pb.appendChild(e)}});
+  let tot=0;Object.values(meta).forEach(t=>{if(t.status==="hantar")tot++});
+  $("exportAll").hidden=!(session&&session.role==="admin");$("sideN").textContent=tot+"/32";
+  const s=$("summary");s.innerHTML="";
+  [[cnt.hantar,"sumH","var(--ok)"],[cnt.draf,"sumD","var(--gold)"],[cnt.none,"sumN","var(--rule)"]].forEach(([n,k,c])=>{const sp=document.createElement("span");sp.innerHTML='<i class="dot"></i><b></b> ';sp.querySelector(".dot").style.background=c;sp.querySelector("b").textContent=n;sp.append(T(k));s.appendChild(sp)});
+  const m=document.createElement("span");m.className="muted";m.textContent=T("sumSub")(sex);s.appendChild(m);
+}
+
+function openTeam(code,name,sx){
+  current={code,name,sex:sx};
+  const id=teamId(code,sx),srv=full[id];
+  form=normalise(srv&&srv.data,code,name,sx);base=srv?srv.updated_at:null;
+  dirty=false;readOnly=false;
+  const loc=readLocal(id);let restored=false;
+  if(loc&&loc.form&&(!srv||!loc.base||loc.base===srv.updated_at)){form=normalise(loc.form,code,name,sx);dirty=true;restored=true}
+  else if(loc)dropLocal(id);
+  $("boardView").hidden=true;$("formView").hidden=false;
+  $("valNotice").hidden=true;$("remoteNotice").hidden=true;
+  try{history.replaceState(null,"","#"+teamId(code,sx))}catch(e){}
+  renderForm();window.scrollTo(0,0);
+  if(restored){toast(T("restored"));scheduleSave()}
+}
+function closeTeam(){
+  current=null;form=null;dirty=false;
+  $("boardView").hidden=false;$("formView").hidden=true;
+  try{history.replaceState(null,"","#")}catch(e){}
+  renderBoard();window.scrollTo(0,0);
+}
+function renderHead(){
+  paintFlag($("fFlag"),current.code,current.name);$("fState").textContent=current.name;
+  $("fSex").textContent=T(current.sex==="L"?"catMen":"catWomen");
+  const exists=!!meta[teamId(current.code,current.sex)];
+  const st=!exists?"none":form.status==="hantar"?"hantar":"draf";
+  $("fChip").className="chip "+st;$("fChip").textContent=T(stKey(st));
+  $("fUpdated").textContent=form.updatedAt?T("updated")(fmtTime(form.updatedAt)):"";
+}
+function inp(val,cls,attrs){const i=document.createElement("input");i.value=val||"";if(cls)i.className=cls;for(const k in attrs){if(k==="aria")i.setAttribute("aria-label",attrs[k]);else i[k]=attrs[k]}i.disabled=readOnly;return i}
+function renderForm(){
+  renderHead();
+  const pb=$("pBody");pb.innerHTML="";
+  form.players.forEach((p,i)=>{
+    const n=i+1, tr=document.createElement("tr");
+    const td=(cls,el)=>{const c=document.createElement("td");if(cls)c.className=cls;if(el)c.appendChild(el);tr.appendChild(c);return c};
+    td("num").textContent=n;
+    const mk=(k,cls,tdc,attrs)=>{const e=inp(p[k],cls,attrs);e.id=`p${i}_${k}`;e.addEventListener("input",()=>{p[k]=k==="name"?up(e):e.value;markDirty();if(k==="name"||k==="no")renderFinal()});td(tdc,e);return e};
+    mk("no","","w-no",{inputMode:"numeric",aria:T("a_no")(n)});
+    mk("name","up","w-name",{aria:T("a_name")(n),autocapitalize:"characters"});
+    mk("chinese","","",{aria:T("a_cn")(n)});
+    const ic=inp(p.ic,"mono",{inputMode:"numeric",placeholder:T("ph_ic"),aria:T("a_ic")(n)});ic.id=`p${i}_ic`;td("w-ic",ic);
+    const dob=inp(p.dob,"mono",{type:"date",aria:T("a_dob")(n)});dob.id=`p${i}_dob`;td("w-dob",dob);
+    const ageC=td("age");
+    const setAge=()=>{const a=ageAt(p.dob);ageC.textContent=a==null?"–":a;ageC.classList.toggle("over",a!=null&&a>=16)};
+    ic.addEventListener("input",()=>{const f=formatIC(ic.value);ic.value=f;p.ic=f;const d=dobFromIC(f);if(d){p.dob=d;dob.value=d;setAge()}ic.classList.remove("err");markDirty()});
+    dob.addEventListener("input",()=>{p.dob=dob.value;setAge();markDirty()});
+    setAge();
+    [["weight","decimal","c_weight"],["height","decimal","c_height"],["spike","numeric","c_spike"],["block","numeric","c_block"],["intl","numeric","c_intl"],["natl","numeric","c_natl"],["other","text","c_other"]]
+      .forEach(([k,im,lbl])=>mk(k,"","w-sm",{inputMode:im,aria:`${T("v_pl")(n)}: ${T(lbl)}`}));
+    pb.appendChild(tr);
+  });
+  const ob=$("oBody");ob.innerHTML="";
+  form.officials.forEach((o,i)=>{
+    const tr=document.createElement("tr"),lbl=T("offs")[i];
+    tr.innerHTML=`<td class="num">${i+1}</td><td><b></b></td><td></td><td></td>`;
+    tr.querySelector("b").textContent=lbl;
+    const nI=inp(o.name,"",{aria:`${lbl}: ${T("o_name")}`});nI.id=`o${i}_name`;nI.classList.add("up");nI.autocapitalize="characters";nI.addEventListener("input",()=>{o.name=up(nI);markDirty()});
+    const tI=inp(o.tel,"mono",{inputMode:"tel",type:"tel",placeholder:T("ph_tel"),aria:`${lbl}: ${T("o_tel")}`});tI.id=`o${i}_tel`;tI.addEventListener("input",()=>{o.tel=tI.value;markDirty()});
+    tr.children[2].appendChild(nI);tr.children[3].appendChild(tI);ob.appendChild(tr);
+  });
+  ["shirt1","shirt2","shorts1","shorts2"].forEach(k=>{const e=$("u_"+k);e.value=form.uniform[k]||"";e.disabled=readOnly;e.oninput=()=>{form.uniform[k]=up(e);markDirty()}});
+  ["secretary","president"].forEach(k=>{const e=$(k);e.value=form[k]||"";e.disabled=readOnly;e.oninput=()=>{form[k]=up(e);markDirty()}});
+  $("saveBtn").disabled=readOnly||!session;$("submitBtn").disabled=readOnly||!session;
+  setSaveState();renderFinal();
+}
+function renderFinal(){
+  if(!form) return;
+  const list=$("finList");list.innerHTML="";
+  const named=form.players.map((p,i)=>[p,i]).filter(([p])=>p.name.trim());
+  form.players.forEach(p=>{if(!p.name.trim()){p.final=false;p.captain=false}});
+  if(!named.length){const d=document.createElement("div");d.className="empty";d.textContent=T("fin_empty");list.appendChild(d)}
+  named.forEach(([p,i])=>{
+    const row=document.createElement("div");row.className="frow"+(p.final?" on":"");
+    const cb=document.createElement("input");cb.type="checkbox";cb.checked=p.final;cb.disabled=readOnly;cb.id=`f${i}_sel`;cb.setAttribute("aria-label",T("fin_pick")(p.name));
+    const jn=document.createElement("span");jn.className="jn";jn.textContent=p.no||"–";
+    const pn=document.createElement("span");pn.className="pn";pn.textContent=p.name;
+    const sel=document.createElement("select");sel.disabled=readOnly||!p.final;sel.id=`f${i}_pos`;sel.setAttribute("aria-label",T("c_pos"));sel.title=T("c_pos");
+    [["","–"]].concat(POS.map(x=>[x,x])).forEach(([v,t])=>{const o=document.createElement("option");o.value=v;o.textContent=t;sel.appendChild(o)});
+    sel.value=p.pos||"";
+    const cap=document.createElement("span");cap.className="cap";
+    const rb=document.createElement("input");rb.type="radio";rb.name="captain";rb.checked=p.captain;rb.disabled=readOnly||!p.final;rb.setAttribute("aria-label",T("c_cap"));
+    cap.append(rb,document.createTextNode("C"));
+    cb.addEventListener("change",()=>{p.final=cb.checked;if(!p.final)p.captain=false;markDirty();renderFinal()});
+    sel.addEventListener("change",()=>{p.pos=sel.value;markDirty();renderFinal()});
+    rb.addEventListener("change",()=>{form.players.forEach(q=>q.captain=false);p.captain=true;markDirty();renderFinal()});
+    [jn,pn].forEach(el=>{el.style.cursor="pointer";el.addEventListener("click",()=>{if(!cb.disabled){cb.checked=!cb.checked;cb.dispatchEvent(new Event("change"))}})});
+    row.append(cb,jn,pn,sel,cap);list.appendChild(row);
+  });
+  const fp=form.players.filter(p=>p.final),cap=fp.find(p=>p.captain),lib=fp.filter(p=>p.pos==="L").length;
+  const bar=$("finBar");bar.innerHTML="";
+  const pill=(cls,b,t)=>{const e=document.createElement("span");e.className="pill "+cls;const bb=document.createElement("b");bb.textContent=b;e.append(bb,document.createTextNode(" "+t));bar.appendChild(e)};
+  pill(fp.length>14?"bad":fp.length>=MINPLAYERS?"ok":"",fp.length+"/14",T("fin_sel"));
+  pill(cap?"ok":"",cap?"#"+(cap.no||"?"):"–",T("fin_cap"));
+  pill(lib>2?"bad":"",String(lib),T("fin_lib"));
+  updateCounts();
+}
+function updateCounts(){
+  if(!form) return;
+  const np=filledPlayers(form).length,no=form.officials.filter(o=>o.name.trim()).length,
+    nu=["shirt1","shirt2","shorts1","shorts2"].filter(k=>form.uniform[k].trim()).length,nd=[form.secretary,form.president].filter(x=>x.trim()).length;
+  const nf=form.players.filter(p=>p.final).length,capOk=form.players.some(p=>p.final&&p.captain);
+  [["nP",np,NPLAYERS,np>=MINPLAYERS],["nF",nf,14,nf>=MINPLAYERS&&nf<=14&&capOk],["nO",no,6,form.officials[0].name.trim()&&form.officials[1].name.trim()],["nU",nu,4,nu===4],["nD",nd,2,nd===2]]
+    .forEach(([id,a,b,ok])=>{const e=$(id);e.textContent=a+"/"+b;e.classList.toggle("done",!!ok)});
+  ["shirt1","shirt2","shorts1","shorts2"].forEach(k=>{$("sw_"+k).style.background=cssColour(form.uniform[k])||""});
+}
+function markDirty(){dirty=true;keepLocal();setSaveState();updateCounts();scheduleSave()}
+function scheduleSave(){clearTimeout(autoT);autoT=setTimeout(()=>save(false,true),2500)}
+function setSaveState(t){$("saveState").textContent=t||(dirty?T("ss_local"):(base?T("ss_auto")(fmtTime(base)):T("ss_none")))}
+
+function validate(f){
+  const errs=[];document.querySelectorAll("input.err").forEach(e=>e.classList.remove("err"));
+  const ps=f.players.map((p,i)=>[p,i]).filter(([p])=>p.name.trim()||p.ic.trim()||p.no.trim());
+  if(ps.length<MINPLAYERS) errs.push(T("v_min")(MINPLAYERS,ps.length));
+  const nos={};
+  ps.forEach(([p,i])=>{
+    const tag=T("v_pl")(i+1)+": ";
+    if(!p.name.trim()){errs.push(tag+T("v_name"));$(`p${i}_name`)?.classList.add("err")}
+    if(icDigits(p.ic).length!==12){errs.push(tag+T("v_ic"));$(`p${i}_ic`)?.classList.add("err")}
+    const no=p.no.trim();
+    if(!no){errs.push(tag+T("v_no"));$(`p${i}_no`)?.classList.add("err")}
+    else if(nos[no]){errs.push(tag+T("v_dup")(no,nos[no]));$(`p${i}_no`)?.classList.add("err")}
+    else nos[no]=i+1;
+  });
+  [0,1].forEach(i=>{const lbl=T("offs")[i]+": ";
+    if(!f.officials[i].name.trim()){errs.push(lbl+T("v_offn"));$(`o${i}_name`)?.classList.add("err")}
+    if(!f.officials[i].tel.trim()){errs.push(lbl+T("v_offt"));$(`o${i}_tel`)?.classList.add("err")}});
+  if(!f.uniform.shirt1.trim()||!f.uniform.shirt2.trim()) errs.push(T("v_uni"));
+  const fp=f.players.filter(p=>p.final&&p.name.trim());
+  if(fp.length){
+    if(fp.length>14) errs.push(T("v_fmax")(fp.length));
+    const caps=fp.filter(p=>p.captain).length; if(caps!==1) errs.push(T("v_fcap"));
+    fp.forEach(p=>{if(!p.pos) errs.push(T("v_fpos")(p.no||"?",p.name))});
+    if(fp.filter(p=>p.pos==="L").length>2) errs.push(T("v_flib"));
+  }
+  return errs;
+}
+async function save(submit,auto){
+  if(!form||!session||readOnly) return;
+  if(saving){if(auto)scheduleSave();return}
+  const v=$("valNotice");
+  if(submit){
+    const errs=validate(form);
+    if(errs.length){v.innerHTML="<b></b><ul></ul>";v.querySelector("b").textContent=T("v_head");const ul=v.querySelector("ul");
+      errs.slice(0,12).forEach(e=>{const li=document.createElement("li");li.textContent=e;ul.appendChild(li)});
+      if(errs.length>12){const li=document.createElement("li");li.textContent=T("v_more")(errs.length-12);ul.appendChild(li)}
+      v.hidden=false;v.scrollIntoView({behavior:"smooth",block:"start"});return}
+    v.hidden=true;
+  }
+  if(auto&&!dirty)return;
+  clearTimeout(autoT);
+  const id=teamId(current.code,current.sex),now=Date.now(),snapshot=JSON.stringify(form);
+  const body=JSON.parse(snapshot);body.updatedAt=now;delete body.dummy;
+  if(submit){body.status="hantar";body.submittedAt=now}
+  if(!auto)setSaveState(T("ss_saving"));
+  saving=true;$("saveBtn").disabled=$("submitBtn").disabled=true;
+  try{
+    const r=await api("b16_save",{p_code:session.code,p_pin:session.pin,p_id:id,p_data:body,p_status:body.status||"draf",p_base:base});
+    if(r&&r.error){
+      if(r.error==="conflict"){$("remoteNotice").hidden=false;setSaveState(T("ss_conflict"));return}
+      if(r.error==="bad_pin"||r.error==="locked"){logout(true);setSaveState(T("l_bad"));openLogin(current.code,()=>save(submit,auto));return}
+      if(r.error==="forbidden"){readOnly=true;renderForm();setSaveState(T("ss_ro"));return}
+      throw new Error(r.error);
+    }
+    const unchanged=JSON.stringify(form)===snapshot;
+    base=r.updated_at;form.updatedAt=now;if(submit){form.status="hantar";form.submittedAt=now}
+    full[id]={data:body,updated_at:base};
+    meta[id]={status:body.status||"draf",updated_at:base,players:filledPlayers(normalise(body,current.code,current.name,current.sex)).length,finals:body.players.filter(p=>p.final&&p.name.trim()).length};
+    if(unchanged){dirty=false;dropLocal(id)}else{keepLocal();scheduleSave()}
+    $("remoteNotice").hidden=true;renderHead();setSaveState();
+    if(!auto)toast(T(submit?"t_sub":"t_saved"));
+  }catch(e){
+    keepLocal();setSaveState(T("ss_fail"));if(auto){clearTimeout(autoT);autoT=setTimeout(()=>save(false,true),15000)}
+  }finally{saving=false;if(!readOnly){$("saveBtn").disabled=$("submitBtn").disabled=false}}
+}
+let toastT;function toast(t){const e=$("toast");e.textContent=t;e.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>e.hidden=true,2400)}
+
+/* FILL_START */
+function xlDate(d){return d?d.replace(/-/g,"/"):""}
+function numOr(v){const t=(v??"").toString().trim();if(t==="")return null;return /^\d+(\.\d+)?$/.test(t)?Number(t):t}
+const SNS="http://schemas.openxmlformats.org/spreadsheetml/2006/main",XMLNS="http://www.w3.org/XML/1998/namespace";
+function colNum(L){let n=0;for(const ch of L)n=n*26+ch.charCodeAt(0)-64;return n}
+function splitRef(a){const m=/^([A-Z]+)(\d+)$/.exec(a);return [m[1],+m[2]]}
+function xesc(v){return String(v).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;")}
+const XDECL='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n';
+function sheetEditor(xmlStr){
+  const doc=new DOMParser().parseFromString(xmlStr,"application/xml");
+  const sd=doc.getElementsByTagNameNS(SNS,"sheetData")[0];
+  const rows=new Map();for(const r of Array.from(sd.children))if(r.localName==="row")rows.set(+r.getAttribute("r"),r);
+  function getRow(n){
+    if(rows.has(n))return rows.get(n);
+    const r=doc.createElementNS(SNS,"row");r.setAttribute("r",String(n));
+    let next=null;for(const [k,el] of [...rows.entries()].sort((x,y)=>x[0]-y[0])){if(k>n){next=el;break}}
+    sd.insertBefore(r,next);rows.set(n,r);return r}
+  function set(ref,v){
+    if(v===null||v===undefined||v==="")return;
+    const [L,n]=splitRef(ref),row=getRow(n),want=colNum(L);row.removeAttribute("spans");
+    let c=null,next=null;
+    for(const x of Array.from(row.children)){if(x.localName!=="c")continue;const d=colNum(splitRef(x.getAttribute("r"))[0])-want;if(d===0){c=x;break}if(d>0){next=x;break}}
+    if(!c){c=doc.createElementNS(SNS,"c");c.setAttribute("r",ref);row.insertBefore(c,next)}
+    while(c.firstChild)c.removeChild(c.firstChild);
+    if(typeof v==="number"){c.removeAttribute("t");const e=doc.createElementNS(SNS,"v");e.textContent=String(v);c.appendChild(e)}
+    else{c.setAttribute("t","inlineStr");const is=doc.createElementNS(SNS,"is"),t=doc.createElementNS(SNS,"t");t.setAttributeNS(XMLNS,"xml:space","preserve");t.textContent=String(v);is.appendChild(t);c.appendChild(is)}
+  }
+  return {set,out:()=>XDECL+new XMLSerializer().serializeToString(doc).replace(/^<\?xml[^>]*\?>\s*/,"")};
+}
+const UP=v=>(v||"").toUpperCase();
+function fillO2(ed,f){
+  f.players.slice(0,20).forEach((p,i)=>{const r=9+i;
+    ed.set("A"+r,numOr(p.no));ed.set("C"+r,UP(p.name));ed.set("F"+r,p.chinese);ed.set("H"+r,p.ic);
+    ed.set("K"+r,xlDate(p.dob));ed.set("L"+r,numOr(p.weight));ed.set("M"+r,numOr(p.height));ed.set("N"+r,numOr(p.spike));
+    ed.set("O"+r,numOr(p.block));ed.set("P"+r,numOr(p.intl));ed.set("Q"+r,numOr(p.natl));ed.set("R"+r,numOr(p.other))});
+  f.officials.forEach((o,i)=>{const r=32+i;ed.set("E"+r,UP(o.name));ed.set("H"+r,o.tel)});
+  ed.set("D42",UP(f.uniform.shirt1));ed.set("E42",UP(f.uniform.shirt2));ed.set("D44",UP(f.uniform.shorts1));ed.set("E44",UP(f.uniform.shorts2));
+}
+function fillO2Bis(ed,f){
+  f.players.filter(p=>p.final&&(p.name||"").trim()).slice(0,14).forEach((p,i)=>{const r=9+i;
+    ed.set("A"+r,p.captain?circ(p.no):numOr(p.no));ed.set("C"+r,p.pos||"");ed.set("E"+r,UP(p.name));ed.set("H"+r,p.chinese);ed.set("J"+r,p.ic);
+    ed.set("M"+r,xlDate(p.dob));ed.set("N"+r,numOr(p.weight));ed.set("O"+r,numOr(p.height));ed.set("P"+r,numOr(p.spike));
+    ed.set("Q"+r,numOr(p.block));ed.set("R"+r,numOr(p.intl));ed.set("S"+r,numOr(p.natl));ed.set("T"+r,numOr(p.other))});
+  const o=f.officials;
+  ed.set("H27",UP(o[0].name));ed.set("H29",o[0].tel);ed.set("H34",UP(o[1].name));ed.set("H36",o[1].tel);
+  [2,3,4,5].forEach((k,j)=>{const nm=UP(o[k].name);if(nm)ed.set("G"+(41+j),nm+(o[k].tel?"   TEL: "+o[k].tel:""))});
+  ed.set("P28",UP(f.uniform.shirt1));ed.set("R28",UP(f.uniform.shirt2));ed.set("P29",UP(f.uniform.shorts1));ed.set("R29",UP(f.uniform.shorts2));
+}
+function fillShapes(xml,f){
+  const v={TEAM:UP(f.state),CODE:f.code,M:f.sex==="L"?"X":"",W:f.sex==="P"?"X":"",SEC:UP(f.secretary),PRES:UP(f.president)};
+  return xml.replace(/\{\{(\w+)\}\}/g,(m,k)=>xesc(v[k]??""));
+}
+let tplBuf=null;async function getTpl(){if(!tplBuf){const r=await fetch("templates/O-2_O-2Bis.xlsx",{cache:"no-cache"});if(!r.ok)throw new Error("template");tplBuf=await r.arrayBuffer()}return tplBuf}
+function libsReady(){return typeof JSZip!=="undefined"}
+async function buildTeamBook(f){
+  const zip=await JSZip.loadAsync(await getTpl());
+  const e1=sheetEditor(await zip.file("xl/worksheets/sheet1.xml").async("string"));fillO2(e1,f);zip.file("xl/worksheets/sheet1.xml",e1.out());
+  const e2=sheetEditor(await zip.file("xl/worksheets/sheet2.xml").async("string"));fillO2Bis(e2,f);zip.file("xl/worksheets/sheet2.xml",e2.out());
+  for(const d of ["xl/drawings/drawing1.xml","xl/drawings/drawing2.xml"])zip.file(d,fillShapes(await zip.file(d).async("string"),f));
+  return zip.generateAsync({type:"arraybuffer",compression:"DEFLATE"});
+}
+const XMIME="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+async function offer(blob,filename){
+  const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download=filename;document.body.appendChild(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),4000);toast(T("t_dlok"));
+}
+$("dlOne").addEventListener("click",async()=>{
+  if(!form) return;if(!libsReady()){toast(T("t_noxl"));return}
+  try{const buf=await buildTeamBook(form);await offer(new Blob([buf],{type:XMIME}),T("x_file1")(form.code,form.sex))}
+  catch(e){toast(T("t_dlfail")+(e.message||e))}
+});
+$("exportAll").addEventListener("click",async()=>{
+  if(!libsReady()||typeof ExcelJS==="undefined"){toast(T("t_noxl"));return}
+  toast(T("t_building"));
+  try{
+    const zip=new JSZip();
+    const sw=new ExcelJS.Workbook();const ws1=sw.addWorksheet(T("x_sum")),ws2=sw.addWorksheet(T("x_all")),ws3=sw.addWorksheet("O-2Bis");
+    ws1.addRow(T("x_hdrSum"));ws2.addRow(T("x_hdrAll"));ws3.addRow(T("x_hdrFin"));
+    for(const sx of ["L","P"]) for(const [code,name] of STATES){
+      const t=full[teamId(code,sx)];const kat=T(sx==="L"?"men":"women");
+      if(!t){ws1.addRow([code,name,kat,T("st_none"),0,0]);continue}
+      const f=normalise(t.data,code,name,sx);const ps=filledPlayers(f);const fp=f.players.filter(p=>p.final&&p.name.trim());
+      ws1.addRow([code,name,kat,T(stKey(f.status==="hantar"?"hantar":"draf")),ps.length,fp.length,f.officials[0].name,f.officials[0].tel,f.officials[1].name,f.officials[1].tel,f.updatedAt?new Date(f.updatedAt).toLocaleString(T("locale")):""]);
+      ps.forEach(p=>ws2.addRow([code,name,kat,p.no,p.name,p.chinese,p.ic,p.dob,ageAt(p.dob)??"",p.weight,p.height,p.spike,p.block,p.intl,p.natl,p.other]));
+      fp.forEach(p=>ws3.addRow([code,name,kat,p.no,p.pos,p.captain?"C":"",p.name,p.ic,p.dob]));
+      zip.file(T("x_file1")(code,sx),await buildTeamBook(f));
+    }
+    [ws1,ws2,ws3].forEach(w=>{w.getRow(1).font={bold:true};w.columns.forEach(c=>c.width=16)});
+    zip.file(T("x_sumFile"),await sw.xlsx.writeBuffer());
+    await offer(await zip.generateAsync({type:"blob"}),T("x_fileAll"));
+  }catch(e){toast(T("t_dlfail")+(e.message||e))}
+});
+$("segL").addEventListener("click",()=>{sex="L";renderBoard()});
+$("segP").addEventListener("click",()=>{sex="P";renderBoard()});
+$("backBtn").addEventListener("click",()=>{const b=$("backBtn");
+  if(dirty&&!b.dataset.confirm){b.dataset.confirm="1";b.textContent=T("backConfirm");setTimeout(()=>{delete b.dataset.confirm;b.textContent=T("back")},4000);return}
+  delete b.dataset.confirm;b.textContent=T("back");closeTeam()});
+$("saveBtn").addEventListener("click",()=>save(false));
+$("submitBtn").addEventListener("click",()=>save(true));
+$("reloadRemote").addEventListener("click",async()=>{const id=teamId(current.code,current.sex);dropLocal(id);await loadFull();openTeam(current.code,current.name,current.sex)});
+
+function renderCountdown(){
+  const now=new Date();const a=Date.UTC(now.getFullYear(),now.getMonth(),now.getDate()),b=Date.UTC(2026,10,14);
+  const n=Math.round((b-a)/864e5);$("cdN").textContent=n>=0?n:"—";$("cdT").textContent=T("cd")(n);
+}
+document.querySelectorAll(".tabs a").forEach(a=>a.addEventListener("click",e=>{e.preventDefault();const t=document.querySelector(a.getAttribute("href"));
+  if(t)t.scrollIntoView({behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth",block:"start"})}));
+function showNotice(cls,key,arg){noticeKey=key;noticeArg=arg;const n=$("dbNotice");n.hidden=false;n.className="notice "+cls;const f=T(key);n.textContent=typeof f==="function"?f(arg):f}
+applyLang();
+function renderAuth(){const b=$("authBtn");b.textContent=session?T("logout")(session.code==="ADMIN"?"Admin":session.code):T("login")}
+function logout(silent){session=null;full={};try{sessionStorage.removeItem("b16s")}catch(e){}renderAuth();if(!silent){if(current&&!dirty)closeTeam();else renderBoard()}}
+let afterLogin=null;
+function openLogin(code,then){
+  afterLogin=then||null;const sel=$("lCode");sel.innerHTML="";
+  STATES.forEach(([c,n])=>{const o=document.createElement("option");o.value=c;o.textContent=n;sel.appendChild(o)});
+  const o=document.createElement("option");o.value="ADMIN";o.textContent=T("l_admin");sel.appendChild(o);
+  sel.value=code||"JHR";$("lPin").value="";$("lErr").textContent="";
+  try{$("loginDlg").showModal()}catch(e){$("loginDlg").setAttribute("open","")}
+  setTimeout(()=>$("lPin").focus(),50);
+}
+$("authBtn").addEventListener("click",()=>{if(session){if(dirty&&current)save(false,true);logout()}else openLogin()});
+$("lCancel").addEventListener("click",()=>$("loginDlg").close());
+$("loginForm").addEventListener("submit",async e=>{
+  e.preventDefault();const code=$("lCode").value,pin=$("lPin").value.trim();$("lErr").textContent="";$("lGo").disabled=true;
+  try{
+    const r=await api("b16_login",{p_code:code,p_pin:pin});
+    if(r==="admin"||r==="state"){
+      session={code,pin,role:r};try{sessionStorage.setItem("b16s",JSON.stringify(session))}catch(e){}
+      $("loginDlg").close();renderAuth();await loadFull();renderBoard();const f=afterLogin;afterLogin=null;if(f)f();
+    }else $("lErr").textContent=T(r==="locked"?"l_locked":"l_bad");
+  }catch(err){$("lErr").textContent=T("l_net")}finally{$("lGo").disabled=false}
+});
+async function loadBoard(){
+  const rows=await api("b16_board");const m={};(rows||[]).forEach(r=>m[r.id]=r);meta=m;
+}
+async function loadFull(){
+  if(!session)return;
+  const r=await api("b16_get",{p_code:session.code,p_pin:session.pin});
+  if(r&&r.error){logout(true);return}
+  const f={};(r.teams||[]).forEach(t=>f[t.id]={data:t.data,updated_at:t.updated_at});full=f;
+}
+async function refresh(first){
+  try{
+    await loadBoard();
+    if(session&&(first||!current||!dirty))await loadFull();
+    $("dbNotice").hidden=true;noticeKey=null;
+  }catch(e){showNotice("bad","n_err",e.message||"network");return}
+  if(current){
+    const id=teamId(current.code,current.sex),m=meta[id];
+    if(m&&base&&m.updated_at!==base&&!saving){
+      if(dirty)$("remoteNotice").hidden=false;
+      else if(full[id]){form=normalise(full[id].data,current.code,current.name,current.sex);base=full[id].updated_at;renderForm()}
+    }
+  }else renderBoard();
+  if(first){const m=/^([A-Z]{3})-(L|P)$/.exec((location.hash||"").slice(1));
+    if(m&&!current){const s=STATES.find(x=>x[0]===m[1]);if(s){sex=m[2];if(canOpen(s[0]))openTeam(s[0],s[1],m[2]);else{renderBoard();openLogin(s[0],()=>openTeam(s[0],s[1],m[2]))}}}}
+}
+window.addEventListener("beforeunload",e=>{if(dirty){keepLocal();e.preventDefault();e.returnValue=""}});
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"&&dirty){keepLocal();save(false,true)}});
+renderAuth();
+refresh(true);
+setInterval(()=>{if(document.visibilityState==="visible")refresh(false)},45000);
+</script>
+
+</body>
+</html>
