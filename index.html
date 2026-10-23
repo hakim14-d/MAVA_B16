@@ -295,6 +295,8 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
             <button type="button" id="segP" aria-pressed="false" data-i18n="women"></button>
           </div>
           <button type="button" id="exportAll" data-i18n="exportAll"></button>
+          <button type="button" id="o1Btn" data-i18n="o1Btn" hidden></button>
+          <button type="button" id="o7Btn" data-i18n="o7Btn" hidden></button>
           <button type="button" class="danger" id="resetAll" data-i18n="resetAll" hidden></button>
         </div>
       </div>
@@ -403,6 +405,7 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
     <div class="wrap">
       <div class="status-line" id="saveState"></div>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button type="button" id="o7One" data-i18n="o7One" hidden></button>
         <button type="button" id="dlOne" data-i18n="dlOne"></button>
         <button type="button" class="primary" id="saveBtn" data-i18n="save"></button>
         <button type="button" class="serve" id="submitBtn" data-i18n="submit"></button>
@@ -533,7 +536,7 @@ en:{
  declH:"Association declaration",
  decl:"We, the undersigned, declare that, in accordance with the present regulations, the registered players are qualified for MAVA competitions.",
  sec:"Honorary Secretary", pres:"President",
- dlOne:"Download PDF (O-2 + O-2Bis)",
+ dlOne:"Download PDF (O-2 + O-2Bis)", o1Btn:"O-1 Uniform colours (PDF)", o7Btn:"O-7 Preliminary inquiry (PDF)", o7One:"O-7 (PDF)", t_nodata:"No team in this category has data yet.",
  login:"Sign in", logout:c=>`Sign out (${c})`, l_title:"Sign in", l_hint:"Enter your state's 6-digit PIN.",
  l_state:"State", l_admin:"Organiser (admin)", l_pin:"PIN", l_go:"Sign in", l_cancel:"Cancel", l_bad:"Wrong PIN. Check it and try again.",
  l_locked:"Too many wrong PINs. Wait 15 minutes, then try again.", l_net:"Cannot reach the server. Check your internet connection.",
@@ -595,7 +598,7 @@ ms:{
  declH:"Pengesahan persatuan",
  decl:"Kami yang bertandatangan di bawah mengesahkan bahawa, mengikut peraturan semasa, pemain yang didaftarkan layak untuk pertandingan MAVA.",
  sec:"Setiausaha Kehormat", pres:"Presiden",
- dlOne:"Muat turun PDF (O-2 + O-2Bis)",
+ dlOne:"Muat turun PDF (O-2 + O-2Bis)", o1Btn:"O-1 Warna pakaian (PDF)", o7Btn:"O-7 Siasatan awal (PDF)", o7One:"O-7 (PDF)", t_nodata:"Belum ada pasukan dalam kategori ini yang mempunyai data.",
  login:"Log masuk", logout:c=>`Log keluar (${c})`, l_title:"Log masuk", l_hint:"Masukkan PIN 6 digit negeri anda.",
  l_state:"Negeri", l_admin:"Penganjur (admin)", l_pin:"PIN", l_go:"Log masuk", l_cancel:"Batal", l_bad:"PIN salah. Semak dan cuba lagi.",
  l_locked:"Terlalu banyak PIN salah. Tunggu 15 minit, kemudian cuba lagi.", l_net:"Tidak dapat menghubungi pelayan. Semak sambungan internet.",
@@ -723,7 +726,7 @@ function renderBoard(){
   const pb=$("pbar");pb.innerHTML="";
   ["hantar","draf","none"].forEach(k=>{for(let i=0;i<cnt[k];i++){const e=document.createElement("i");e.className=k;pb.appendChild(e)}});
   let tot=0;Object.values(meta).forEach(t=>{if(t.status==="hantar")tot++});
-  $("exportAll").hidden=!(session&&session.role==="admin");$("resetAll").hidden=!(session&&session.role==="admin");$("sideN").textContent=tot+"/32";
+  $("exportAll").hidden=!(session&&session.role==="admin");$("resetAll").hidden=!(session&&session.role==="admin");["o1Btn","o7Btn"].forEach(k=>$(k).hidden=!(session&&session.role==="admin"));$("sideN").textContent=tot+"/32";
   const s=$("summary");s.innerHTML="";
   [[cnt.hantar,"sumH","var(--ok)"],[cnt.draf,"sumD","var(--gold)"],[cnt.none,"sumN","var(--rule)"]].forEach(([n,k,c])=>{const sp=document.createElement("span");sp.innerHTML='<i class="dot"></i><b></b> ';sp.querySelector(".dot").style.background=c;sp.querySelector("b").textContent=n;sp.append(T(k));s.appendChild(sp)});
   const m=document.createElement("span");m.className="muted";m.textContent=T("sumSub")(sex);s.appendChild(m);
@@ -791,6 +794,7 @@ function renderForm(){
   });
   ["shirt1","shirt2","shorts1","shorts2"].forEach(k=>{const e=$("u_"+k);e.value=form.uniform[k]||"";e.disabled=readOnly;e.oninput=()=>{form.uniform[k]=up(e);markDirty()};e.onblur=()=>{const r=correctColour(e.value);if(r.changed&&r.text){const was=e.value;e.value=r.text;form.uniform[k]=r.text;markDirty();uniNote(T("u_fixed")(was,r.text))}};e.onfocus=()=>{lastColour=k}});
   ["secretary","president"].forEach(k=>{const e=$(k);e.value=form[k]||"";e.disabled=readOnly;e.oninput=()=>{form[k]=up(e);markDirty()}});
+  $("o7One").hidden=!(session&&session.role==="admin");
   $("saveBtn").disabled=readOnly||!session;$("submitBtn").disabled=readOnly||!session;
   setSaveState();renderFinal();renderPalette();
 }
@@ -1092,6 +1096,162 @@ async function buildTeamPdf(f){
   return doc.output("arraybuffer");
 }
 
+/* ===== FIVB O-7 (Preliminary Inquiry) and O-1 (Uniform Colours), A4 portrait ===== */
+const PW=210,PM=10;
+async function pdfHeaderP(doc,code,title,sexLabel){
+  pdfStripe(doc,0,0,PW,2.4);doc.setFillColor(...PDF_C.navy);doc.rect(0,2.4,PW,22,"F");pdfNet(doc,0,24.4,PW,2.2);
+  try{doc.addImage(await imgToPng("mava-logo.png",235*2,280*2),"PNG",PM,4,15.4,18.4)}catch(e){}
+  doc.setTextColor(...PDF_C.white);doc.setFont("helvetica","bold");doc.setFontSize(10.2);doc.text("KEJOHANAN BOLA TAMPAR REMAJA B16 MALAYSIA 2026",29,10.5);
+  doc.setFont("helvetica","normal");doc.setFontSize(7.6);doc.text("14 - 18 November 2026  |  Kota Kinabalu, Sabah  |  "+sexLabel,29,15.4);
+  doc.setTextColor(...PDF_C.gold);doc.setFont("helvetica","bold");doc.setFontSize(7);doc.text("MALAYSIA VOLLEYBALL ASSOCIATION (MAVA)",29,20.2);
+  doc.setFillColor(...PDF_C.white);doc.roundedRect(136,4.6,64,17.4,2,2,"F");
+  doc.setTextColor(...PDF_C.navy);doc.setFont("helvetica","bold");doc.setFontSize(16);doc.text(code,149,15.6,{align:"center"});
+  doc.setDrawColor(...PDF_C.line);doc.setLineWidth(.3);doc.line(161,7.6,161,19);
+  doc.setFontSize(6.8);doc.setTextColor(...PDF_C.red);doc.text(title[0],164,10.8);doc.setTextColor(...PDF_C.muted);doc.setFont("helvetica","normal");doc.setFontSize(6.4);doc.text(title[1],164,14.4);
+  doc.setFontSize(5.2);doc.text(title[2],164,18.4);
+}
+function pdfFooterP(doc,label,page,pages){
+  doc.setDrawColor(...PDF_C.line);doc.setLineWidth(.2);doc.line(PM,287,PW-PM,287);
+  const now=new Date();pdfLabel(doc,"Generated "+now.toLocaleDateString("en-GB")+" "+now.toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"})+"  |  Sistem Pendaftaran B16 2026 (MAVA)",PM,291);
+  pdfLabel(doc,label+(pages?"  |  Page "+page+" of "+pages:""),PW-PM,291,{align:"right"});
+}
+function secBar(doc,t,sub,y){doc.setFillColor(...PDF_C.tint);doc.rect(PM,y,PW-2*PM,6,"F");doc.setFillColor(...PDF_C.red);doc.rect(PM,y,1.2,6,"F");
+  doc.setFont("helvetica","bold");doc.setFontSize(8);doc.setTextColor(...PDF_C.navy);doc.text(t,PM+3.4,y+4.1);
+  if(sub){const w=doc.getTextWidth(t);doc.setFont("helvetica","italic");doc.setFontSize(6.6);doc.setTextColor(...PDF_C.muted);doc.text(sub,PM+3.4+w+2,y+4.1)}}
+function okBox(doc,x,y,state){// state: true=OK ticked, false=NO ticked, null=empty
+  [0,1].forEach(i=>{doc.setDrawColor(...PDF_C.ink);doc.setLineWidth(.25);doc.setFillColor(...PDF_C.white);doc.rect(x+i*4.6,y,3.8,3.8,"FD")});
+  if(state===true||state===false){const bx=x+(state?0:4.6);doc.setDrawColor(...PDF_C.navy);doc.setLineWidth(.55);doc.line(bx+.7,y+2,bx+1.6,y+3);doc.line(bx+1.6,y+3,bx+3.2,y+.8)}}
+function okHead(doc,x,y){pdfLabel(doc,"OK",x+1.9,y,{align:"center",bold:true,size:5.8});pdfLabel(doc,"NO",x+6.5,y,{align:"center",bold:true,size:5.8})}
+function biLabel(doc,en,ms,x,y,o){doc.setFont("helvetica","bold");doc.setFontSize(o&&o.size||7);doc.setTextColor(...PDF_C.ink);doc.text(en,x,y);
+  if(ms){doc.setFont("helvetica","normal");doc.setFontSize((o&&o.size||7)-1);doc.setTextColor(...PDF_C.muted);doc.text(ms,x,y+3)}}
+function fieldBox(doc,label,value,x,y,w,o){pdfLabel(doc,label,x,y-1.2,{bold:true,size:6});doc.setDrawColor(...PDF_C.line);doc.setLineWidth(.25);doc.setFillColor(...PDF_C.white);doc.roundedRect(x,y,w,7,1,1,"FD");
+  if(value){doc.setFont("helvetica","bold");doc.setFontSize(o&&o.size||9);doc.setTextColor(...PDF_C.ink);doc.text(String(value),x+2,y+4.9,{maxWidth:w-3})}}
+function sigRow(doc,group,role,name,y){
+  doc.setFont("helvetica","bold");doc.setFontSize(7.6);doc.setTextColor(...PDF_C.navy);doc.text(group,PW/2,y,{align:"center"});
+  biLabel(doc,role[0],role[1],PM+2,y+8);
+  doc.setDrawColor(...PDF_C.line);doc.setLineWidth(.25);doc.roundedRect(58,y+4,70,8,1,1,"S");
+  if(name){let fs=8.6;doc.setFont("helvetica","bold");doc.setFontSize(fs);while(fs>5.5&&doc.getTextWidth(name)>66){fs-=.2;doc.setFontSize(fs)}doc.setTextColor(...PDF_C.ink);doc.text(name,93,y+9.3,{align:"center"})}
+  pdfLabel(doc,"NAME / Nama",93,y+15,{align:"center",size:5.6});
+  doc.setFillColor(...PDF_C.zebra);doc.roundedRect(136,y+4,64,8,1,1,"F");pdfLabel(doc,"SIGNATURE / Tandatangan",168,y+15,{align:"center",size:5.6});
+}
+function o7Checks(f){
+  const fin=f.players.filter(p=>p.final&&(p.name||"").trim());const ok=fn=>fin.length>0&&fin.every(fn);
+  const nos=fin.map(p=>String(p.no).trim());const nlib=fin.filter(p=>p.pos==="L").length,caps=fin.filter(p=>p.captain).length;
+  return {names:ok(p=>(p.name||"").trim()&&icDigits(p.ic).length===12),dob:ok(p=>/^\d{4}-\d{2}-\d{2}$/.test(p.dob||"")),jersey:fin.length>0&&nos.every(Boolean)&&new Set(nos).size===nos.length,
+    heights:ok(p=>Number(p.height)>0),weights:ok(p=>Number(p.weight)>0),spike:ok(p=>Number(p.spike)>0),block:ok(p=>Number(p.block)>0),
+    caplib:fin.length>0&&caps===1&&(fin.length>12?nlib===2:nlib<=2)};
+}
+async function addO7(doc,f,first){
+  const sexLabel=f.sex==="L"?"MEN / LELAKI":"WOMEN / WANITA";const title=["PRELIMINARY INQUIRY","Siasatan Awal","Based on FIVB form O-7 (2018)"];
+  if(!first)doc.addPage("a4","portrait");
+  await pdfHeaderP(doc,"O-7",title,sexLabel);
+  /* team / venue bar */
+  let y=33;
+  try{doc.addImage(await imgToPng("flags/MY-"+ISO[f.code]+".svg",240,120),"PNG",PM,y,14,7);doc.setDrawColor(...PDF_C.line);doc.rect(PM,y,14,7,"S")}catch(e){}
+  fieldBox(doc,"TEAM / Pasukan",f.state.toUpperCase()+"  ("+f.code+")",26,y,62);fieldBox(doc,"CITY / Bandar","KOTA KINABALU",91,y,38);
+  fieldBox(doc,"DATE / Tarikh","",132,y,30);fieldBox(doc,"TIME / Masa","",165,y,35);
+  y+=11;fieldBox(doc,"HOTEL",""+"",26,y,174);
+  /* 1. officials */
+  y+=10;secBar(doc,"1. CHECKING OF TEAM OFFICIALS","Semakan pegawai pasukan",y);
+  const o=f.officials,nm=i=>UP(o[i]&&o[i].name);
+  const rows=[["TEAM MANAGER","Pengurus Pasukan",nm(0),"X"],["HEAD COACH","Jurulatih Utama",nm(1),""],["ASSISTANT COACH","Penolong Jurulatih",nm(2),""],["ASSISTANT COACH 2","Penolong Jurulatih 2",nm(3),""],
+    ["MEDICAL DOCTOR  (ID#)","Doktor",""," "],["THERAPIST / TRAINER  (ID#)","Terapis / Jurulatih",nm(4),""],["ACCREDITED JOURNALIST","Wartawan bertauliah","","X"],["",""," ",""],["","",""," "]];
+  doc.autoTable({...pdfTableBase,startY:y+7.5,margin:{left:PM,right:PM},
+    head:[["FUNCTION / Fungsi","FAMILY NAME, NAME / Nama penuh","NATIONALITY","ROOM","BENCH"]],
+    body:rows.map(r=>[r[0]?r[0]+"\n"+r[1]:"",r[2],r[2]&&r[2].trim()?"MAS":"","",r[3]==="X"?"X":""]),
+    columnStyles:{0:{cellWidth:46,fontStyle:"bold",fontSize:6.6},1:{fontStyle:"bold",fontSize:8},2:{cellWidth:22,halign:"center",fontStyle:"bold"},3:{cellWidth:18},4:{cellWidth:16,halign:"center",textColor:PDF_C.muted,fontSize:10}},
+    styles:{...pdfTableBase.styles,minCellHeight:7.4,overflow:"linebreak"},
+    didParseCell:d=>{if(d.section==="body"&&d.column.index===0){d.cell.styles.textColor=PDF_C.ink}}});
+  y=doc.lastAutoTable.finalY+4;
+  const fin=f.players.filter(p=>p.final&&(p.name||"").trim()),cap=fin.find(p=>p.captain);
+  biLabel(doc,"CAPTAIN","Kapten",PM+2,y+3);doc.setDrawColor(...PDF_C.ink);doc.setLineWidth(.3);doc.roundedRect(30,y-.4,14,7,1,1,"S");pdfLabel(doc,"No.",25.5,y+4.2,{size:6});
+  if(cap){doc.setFont("helvetica","bold");doc.setFontSize(11);doc.setTextColor(...PDF_C.red);doc.text(String(cap.no),37,y+4.9,{align:"center"})}
+  pdfLabel(doc,"Final team (O-2Bis): "+fin.length+" players  |  Libero: "+fin.filter(p=>p.pos==="L").map(p=>"#"+p.no).join(", "),52,y+4.2,{size:7,color:PDF_C.ink,bold:true});
+  /* 2. O-2bis data */
+  y+=11;secBar(doc,"2. CHECKING OF O-2bis DATA AND PASSPORTS","Semakan data O-2Bis dan pasport",y);
+  const c=o7Checks(f);
+  const items=[[["1. NAMES","Nama",c.names],["2. DATES OF BIRTH","Tarikh lahir",c.dob],["3. JERSEY NUMBERS","Nombor jersi",c.jersey],["4. NATIONALITIES","Warganegara",null]],
+    [["5. CLUBS OF ORIGIN","Kelab asal",null],["6. HEIGHTS","Ketinggian",c.heights],["7. WEIGHTS","Berat",c.weights],["8. HIGHEST REACH: SPIKE","Capaian spike",c.spike]],
+    [["9. HIGHEST REACH: BLOCK","Capaian block 2 tangan",c.block],["10. DOCTOR / THERAPIST ACCREDITED","Doktor / terapis bertauliah",null],["11. CAPTAIN AND LIBERO(S) SELECTED","Kapten dan libero dipilih",c.caplib]]];
+  const colX=[PM+2,PM+66,PM+130];items.forEach((col,ci)=>{okHead(doc,colX[ci]+50,y+9.6);col.forEach((it,ri)=>{const yy=y+11.5+ri*8.2;biLabel(doc,it[0],it[1],colX[ci],yy+2.2,{size:6.6});okBox(doc,colX[ci]+50,yy,it[2]?true:null)})});
+  y+=46;pdfLabel(doc,"Ticks in OK were set automatically because the registration data is complete. The Control Committee confirms each item against passports.",PM+2,y,{size:5.8});
+  /* 3. uniforms + 4. medical */
+  y+=4;doc.setFillColor(...PDF_C.tint);doc.rect(PM,y,124,6,"F");doc.setFillColor(...PDF_C.red);doc.rect(PM,y,1.2,6,"F");doc.setFont("helvetica","bold");doc.setFontSize(8);doc.setTextColor(...PDF_C.navy);doc.text("3. TEAM UNIFORMS",PM+3.4,y+4.1);
+  doc.setFillColor(...PDF_C.tint);doc.rect(PM+128,y,62,6,"F");doc.setFillColor(...PDF_C.red);doc.rect(PM+128,y,1.2,6,"F");doc.text("4. MEDICAL ITEMS",PM+131.4,y+4.1);
+  const uy=y+9;okHead(doc,PM+112,uy-.4);
+  const sw=v=>splitColours(v).map(p=>{const m=matchColour(p);return m?hexRgb(m[2]):null}).filter(Boolean);
+  const uni=[["1. COLOURS / 3 SETS","Warna / 3 set",[["SET 1",UP(f.uniform.shirt1)+(f.uniform.shorts1?" / "+UP(f.uniform.shorts1):"")],["SET 2",UP(f.uniform.shirt2)+(f.uniform.shorts2?" / "+UP(f.uniform.shorts2):"")],["LIBERO",""],["2nd COLOUR AVAILABLE",""]]],
+    ["2. SHIRTS N°","Nombor baju",[["PLACE",""],["SIZE",""],["CONTRAST",""]]],["3. PLAYER'S NAME","Nama pemain",[["PLACE",""],["SIZE",""],["CONTRAST",""]]],["4. MANUFACTURER","Pengeluar",[["",""]]],["5. PUBLICITY","Iklan",[["",""]]]];
+  let yy=uy+1.2;
+  for(const [en,ms,lines] of uni){const h=Math.max(lines.length*5,9);doc.setDrawColor(...PDF_C.line);doc.setLineWidth(.25);doc.roundedRect(PM,yy-1,36,h,1,1,"S");biLabel(doc,en,ms,PM+2,yy+3,{size:6.6});
+    lines.forEach((l,i)=>{const ly=yy+i*5;if(l[0])pdfLabel(doc,l[0]+":",PM+40,ly+2.8,{size:6,bold:true});
+      if(l[1]){const cs=sw(l[1].split(" / ")[0]);if(cs.length){cs.forEach((cc,k)=>{doc.setFillColor(...cc);doc.rect(PM+62+k*3.4/cs.length,ly+.2,3.4/cs.length,3.4,"F")});doc.setDrawColor(...PDF_C.muted);doc.rect(PM+62,ly+.2,3.4,3.4,"S")}
+        doc.setFont("helvetica","bold");doc.setFontSize(7.2);doc.setTextColor(...PDF_C.ink);doc.text(l[1],PM+67,ly+2.9,{maxWidth:42})}
+      else{doc.setDrawColor(...PDF_C.line);doc.line(PM+62,ly+3.4,PM+108,ly+3.4)}
+      okBox(doc,PM+112,ly,null)});
+    yy+=h+1.6}
+  okHead(doc,PM+178,uy-.4);biLabel(doc,"1. HEALTH CERTIFICATE (M-3)","Sijil kesihatan",PM+131,uy+3,{size:6.6});okBox(doc,PM+178,uy+.6,null);
+  pdfLabel(doc,"REMARKS / Catatan",PM+131,uy+14,{bold:true,size:6});doc.setDrawColor(...PDF_C.line);for(let i=0;i<5;i++)doc.line(PM+131,uy+20+i*6,PW-PM,uy+20+i*6);
+  pdfFooterP(doc,"Form O-7  |  "+f.code+" "+(f.sex==="L"?"Men":"Women"),1,2);
+  /* ---------- page 2 ---------- */
+  doc.addPage("a4","portrait");await pdfHeaderP(doc,"O-7",title,sexLabel);
+  y=33;fieldBox(doc,"TEAM / Pasukan",f.state.toUpperCase()+"  ("+f.code+")",PM,y,90);
+  y+=11;secBar(doc,"5. INSTRUCTIONS, INFO AND DOCUMENTS HANDED OVER BY THE O.C.","Arahan dan dokumen daripada penganjur",y);
+  const left=[["1. GENERAL TECHNICAL MEETING","Mesyuarat teknikal"],["2. OPENING CEREMONY","Majlis perasmian"],["3. TRANSPORTATION","Pengangkutan"],["4. MEALS","Makan"],["5. TRAINING CALENDAR","Jadual latihan"]];
+  const right=[["6. EVENT HANDBOOK","Buku panduan kejohanan"],["7. COMPETITION REGULATIONS","Peraturan pertandingan"],["8. OFFICIAL PROGRAMME","Atur cara rasmi"],["9. ACCREDITATION CARDS","Kad akreditasi"],["10. TEAM VIDEO CAMERA AUTHORISATION","Kebenaran kamera video pasukan"]];
+  okHead(doc,PM+70,y+10);okHead(doc,PM+170,y+10);
+  left.forEach((it,i)=>{biLabel(doc,it[0],it[1],PM+2,y+14.2+i*8,{size:6.8});okBox(doc,PM+70,y+12+i*8,null)});
+  right.forEach((it,i)=>{biLabel(doc,it[0],it[1],PM+100,y+14.2+i*8,{size:6.8});okBox(doc,PM+170,y+12+i*8,null)});
+  y+=54;pdfLabel(doc,"REMARKS / Catatan",PM+2,y,{bold:true,size:6});doc.setDrawColor(...PDF_C.line);for(let i=0;i<3;i++)doc.line(PM+2,y+6+i*6,PW-PM,y+6+i*6);
+  y+=25;secBar(doc,"6. ITEMS EVENTUALLY PROVIDED","Barang yang disediakan",y);
+  pdfLabel(doc,"YES",PM+62,y+10,{bold:true,size:5.8,align:"center"});pdfLabel(doc,"NO",PM+68,y+10,{bold:true,size:5.8,align:"center"});
+  [["1. BALLS FOR TRAINING","Bola untuk latihan"],["2. TOWELS","Tuala"]].forEach((it,i)=>{biLabel(doc,it[0],it[1],PM+2,y+14+i*8,{size:6.8});okBox(doc,PM+60,y+11.8+i*8,null)});
+  biLabel(doc,"3. OTHERS","Lain-lain",PM+100,y+14,{size:6.8});doc.setDrawColor(...PDF_C.line);doc.line(PM+122,y+14.4,PW-PM,y+14.4);
+  y+=32;pdfLabel(doc,"REMARKS / Catatan",PM+2,y,{bold:true,size:6});for(let i=0;i<3;i++)doc.line(PM+2,y+6+i*6,PW-PM,y+6+i*6);
+  y+=26;secBar(doc,"7. AUTHORIZED SIGNATURES","Tandatangan yang diberi kuasa",y);
+  sigRow(doc,"DELEGATION / Delegasi",["TEAM MANAGER","Pengurus Pasukan"],nm(0),y+12);
+  sigRow(doc,"CONTROL COMMITTEE / Jawatankuasa Kawalan",["DELEGATE 1","Delegasi 1"],"",y+36);
+  sigRow(doc,"ORGANIZING COMMITTEE / Jawatankuasa Penganjur",["O.C. REPRESENTATIVE","Wakil penganjur"],"",y+60);
+  pdfFooterP(doc,"Form O-7  |  "+f.code+" "+(f.sex==="L"?"Men":"Women"),2,2);
+}
+async function buildO7Pdf(forms){
+  const {jsPDF}=window.jspdf;const doc=new jsPDF({orientation:"portrait",unit:"mm",format:"a4",compress:true});
+  doc.setProperties({title:"O-7 Preliminary Inquiry - B16 2026",author:"MAVA"});
+  let first=true;for(const f of forms){await addO7(doc,f,first);first=false}
+  return doc.output("arraybuffer");
+}
+async function buildO1Pdf(sx,forms){
+  const {jsPDF}=window.jspdf;const doc=new jsPDF({orientation:"portrait",unit:"mm",format:"a4",compress:true});
+  doc.setProperties({title:"O-1 Uniform Colours - B16 2026 "+(sx==="L"?"Men":"Women"),author:"MAVA"});
+  await pdfHeaderP(doc,"O-1",["UNIFORM COLOURS","Warna pakaian","Based on FIVB form O-1 (2011)"],sx==="L"?"MEN / LELAKI":"WOMEN / WANITA");
+  let y=33;fieldBox(doc,"CITY / Bandar","KOTA KINABALU",PM,y,50);fieldBox(doc,"DATE / Tarikh","",63,y,34);fieldBox(doc,"TIME / Masa","",100,y,30);fieldBox(doc,"POOL / PHASE  (Kumpulan / Peringkat)","",133,y,67);
+  y+=11;secBar(doc,"REGISTERED COLOURS","Warna berdaftar (warna baju sahaja)",y);
+  const sw=v=>splitColours(v).map(p=>{const m=matchColour(p);return m?hexRgb(m[2]):null}).filter(Boolean);
+  const half=Math.ceil(forms.length/2)||1;const groups=[forms.slice(0,half),forms.slice(half)].filter(g=>g.length);
+  let ty=y+8;
+  for(const g of groups){
+    const head=[["SET"].concat(g.map(f=>f.code))];const body=[["1"].concat(g.map(f=>UP(f.uniform.shirt1))),["2"].concat(g.map(f=>UP(f.uniform.shirt2)))];
+    const cw=(PW-2*PM-10)/Math.max(g.length,1);
+    doc.autoTable({...pdfTableBase,startY:ty,margin:{left:PM,right:PM},head,body,
+      columnStyles:Object.fromEntries([[0,{cellWidth:10,halign:"center",fontStyle:"bold"}]].concat(g.map((_,i)=>[i+1,{cellWidth:cw,halign:"center",fontStyle:"bold",fontSize:6.2,cellPadding:{top:5.4,bottom:.8,left:.5,right:.5},valign:"bottom"}]))),
+      headStyles:{...pdfTableBase.headStyles,fontSize:7.4},styles:{...pdfTableBase.styles,minCellHeight:10.4,overflow:"linebreak"},
+      didDrawCell:d=>{if(d.section==="head"&&d.column.index>0){}
+        if(d.section==="body"&&d.column.index>0){const cs=sw(d.cell.raw);if(!cs.length)return;const s=4.4,cx=d.cell.x+d.cell.width/2-s/2,cy=d.cell.y+1.2;
+          cs.forEach((cc,k)=>{doc.setFillColor(...cc);doc.rect(cx+k*s/cs.length,cy,s/cs.length,s,"F")});doc.setDrawColor(...PDF_C.muted);doc.setLineWidth(.15);doc.rect(cx,cy,s,s,"S")}}});
+    ty=doc.lastAutoTable.finalY+3}
+  y=ty+3;secBar(doc,"MATCH SCHEDULE AND TEAMS' CHOICE","Jadual perlawanan dan pilihan pasukan (1 - 2)",y);
+  const blank=Array.from({length:Math.max(10,Math.floor((268-(y+20))/6.3))},()=>Array(10).fill(""));
+  doc.autoTable({...pdfTableBase,startY:y+7.5,margin:{left:PM,right:PM},
+    head:[[{content:"DATE",rowSpan:2},{content:"No.",rowSpan:2},{content:"TEAM A",rowSpan:2},{content:"TEAM B",rowSpan:2},{content:"1st CHOICE",colSpan:2},{content:"2nd CHOICE",colSpan:2},{content:"DECISION",colSpan:2}],["A","B","A","B","A","B"]],
+    body:blank,columnStyles:{0:{cellWidth:22},1:{cellWidth:12},2:{cellWidth:22},3:{cellWidth:22}},styles:{...pdfTableBase.styles,minCellHeight:6.3},
+    didParseCell:d=>{if(d.section==="body"&&(d.column.index===8||d.column.index===9))d.cell.styles.fillColor=[236,238,243]}});
+  y=doc.lastAutoTable.finalY+5;
+  biLabel(doc,"APPROVAL","Kelulusan",PM+2,y+4);pdfLabel(doc,"Technical Delegate / Delegasi Teknikal",PM+28,y+4.4,{bold:true,size:6.6,color:PDF_C.ink});
+  doc.setFillColor(...PDF_C.zebra);doc.roundedRect(PM+82,y,108,9,1,1,"F");
+  pdfFooterP(doc,"Form O-1  |  "+(sx==="L"?"Men":"Women")+"  |  "+forms.length+" teams");
+  return doc.output("arraybuffer");
+}
+
 const XMIME="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
 async function offer(blob,filename){
   if(window.B16_OFFER)return window.B16_OFFER(blob,filename);
@@ -1124,6 +1284,15 @@ $("exportAll").addEventListener("click",async()=>{
     await offer(await zip.generateAsync({type:"blob"}),T("x_fileAll"));
   }catch(e){toast(T("t_dlfail")+(e.message||e))}
 });
+function catForms(sx){return STATES.filter(([c])=>full[teamId(c,sx)]).map(([c,n])=>normalise(full[teamId(c,sx)].data,c,n,sx))}
+async function fivbDownload(btn,make,name){
+  if(!pdfLibsReady()){toast(T("t_noxl"));return}
+  btn.disabled=true;try{const buf=await make();if(!buf){toast(T("t_nodata"));return}await offer(new Blob([buf],{type:"application/pdf"}),name)}
+  catch(e){toast(T("t_dlfail")+(e.message||e))}finally{btn.disabled=false}
+}
+$("o1Btn").addEventListener("click",()=>{const fs=catForms(sex);fivbDownload($("o1Btn"),async()=>fs.length?buildO1Pdf(sex,fs):null,`O-1 Uniform Colours B16 2026 - ${sex==="L"?"Men":"Women"}.pdf`)});
+$("o7Btn").addEventListener("click",()=>{const fs=catForms(sex);fivbDownload($("o7Btn"),async()=>fs.length?buildO7Pdf(fs):null,`O-7 Preliminary Inquiry B16 2026 - ${sex==="L"?"Men":"Women"} (${fs.length} teams).pdf`)});
+$("o7One").addEventListener("click",()=>{if(!form)return;fivbDownload($("o7One"),()=>buildO7Pdf([form]),`O-7 Preliminary Inquiry B16 2026 - ${form.code} ${form.sex==="L"?"Men":"Women"}.pdf`)});
 $("segL").addEventListener("click",()=>{sex="L";renderBoard()});
 $("segP").addEventListener("click",()=>{sex="P";renderBoard()});
 $("backBtn").addEventListener("click",()=>{const b=$("backBtn");
