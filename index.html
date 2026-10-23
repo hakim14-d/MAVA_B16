@@ -80,7 +80,7 @@ h2{font-family:var(--f-display);font-weight:800;font-size:clamp(30px,4vw,40px);l
 .ctrl{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
 .seg{display:inline-flex;background:var(--sunk);border-radius:10px;padding:3px;gap:3px}
 .seg button{border:0;background:transparent;border-radius:8px;min-height:36px;padding:6px 18px}
-.seg button[aria-pressed="true"]{background:var(--surface);color:var(--zone);box-shadow:0 1px 2px rgba(15,29,51,.15)}
+.seg button[aria-pressed="true"]{background:var(--zone);color:#fff;box-shadow:0 1px 2px rgba(15,29,51,.2)}
 .progress{display:grid;gap:8px}
 .progress .bar{display:grid;grid-template-columns:repeat(16,1fr);gap:4px}
 .progress .bar i{height:10px;border-radius:2px;background:var(--sunk)}
@@ -90,13 +90,17 @@ h2{font-family:var(--f-display);font-weight:800;font-size:clamp(30px,4vw,40px);l
 .progress .txt b{color:var(--ink);font-weight:700}
 .dot{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:6px;vertical-align:1px}
 .board{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
-.team{display:grid;grid-template-columns:auto 1fr auto;gap:2px 14px;align-items:center;text-align:left;padding:14px 16px;border-radius:12px;border:1.5px solid var(--rule);background:var(--surface);font-weight:400;min-height:82px}
+.team{display:grid;grid-template-columns:52px minmax(0,1fr) auto;grid-template-rows:auto auto;gap:6px 12px;align-items:center;text-align:left;padding:14px 16px;border-radius:12px;border:1.5px solid var(--rule);background:var(--surface);font-weight:400;min-height:0;position:relative}
 .team:hover{border-color:var(--zone);background:var(--surface)}
-.flag{grid-row:span 2;width:46px;height:30px;border-radius:3px;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 0 0 1px rgba(15,29,51,.18)}
+.flag{width:46px;height:30px;border-radius:3px;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 0 0 1px rgba(15,29,51,.18)}
 .flag i{flex:1}
-.team .nm{font-weight:700;font-size:15.5px;line-height:1.2}
-.team .cd{grid-row:span 2;font-family:var(--f-display);font-weight:800;font-size:28px;color:var(--muted);opacity:.55;line-height:1}
-.team .st{display:flex;gap:8px;align-items:center;font-size:13px;color:var(--muted)}
+.team .flag{grid-column:1;grid-row:1}
+.team .nm{grid-column:2;grid-row:1;font-weight:700;font-size:15.5px;line-height:1.2;min-width:0;min-height:2.4em;display:flex;align-items:center}
+.team .cd{grid-column:3;grid-row:1;font-family:var(--f-display);font-weight:800;font-size:22px;color:var(--muted);opacity:.6;line-height:1;letter-spacing:.02em}
+.team .st{grid-column:1/-1;grid-row:2;display:grid;grid-template-columns:auto 1fr auto;gap:6px 10px;align-items:center;font-size:12.5px;color:var(--muted);padding-top:8px;border-top:1px solid var(--rule)}
+.team .st .chip{grid-column:1;grid-row:1;justify-self:start}
+.team .st .cnt{grid-column:1/-1;grid-row:2;white-space:nowrap;font-variant-numeric:tabular-nums;min-height:1.4em}
+.team .st .lock{grid-column:3;grid-row:1}
 .chip{white-space:nowrap;display:inline-flex;align-items:center;gap:5px;font-size:12.5px;font-weight:700;padding:2px 9px;border-radius:999px}
 .chip::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
 .chip.none{background:var(--sunk);color:var(--muted)}
@@ -178,7 +182,12 @@ dialog::backdrop{background:rgba(10,25,50,.55)}
 .dlg input{font-size:20px;letter-spacing:.3em;text-align:center}
 .dlg .err{color:var(--bad);font-weight:600;font-size:14px;min-height:1.2em}
 .dlg .row{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
-.team .lock{font-size:12px;color:var(--muted);font-weight:600}
+.team .lock{display:inline-flex;align-items:center;gap:4px;font-size:12px;color:var(--muted);font-weight:600;white-space:nowrap}
+.team .lock svg{width:13px;height:13px}
+.team.open .lock{color:var(--ok)}
+.dlg .who{display:flex;gap:12px;align-items:center}
+.dlg .who .flag{width:54px;height:36px}
+.dlg .who b{font-family:var(--f-display);font-size:28px;font-weight:800;text-transform:uppercase;line-height:1}
 .flag{background:var(--sunk)}
 .flag img{display:block;width:100%;height:100%;object-fit:cover}
 .up{text-transform:uppercase}
@@ -367,7 +376,8 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
   <form class="dlg" id="loginForm" method="dialog">
     <h3 data-i18n="l_title"></h3>
     <div class="hint" data-i18n="l_hint"></div>
-    <label class="f"><span data-i18n="l_state"></span><select id="lCode"></select></label>
+    <div class="who" id="lWho" hidden><span class="flag" id="lFlag"></span><b id="lName"></b></div>
+    <label class="f" id="lPick"><span data-i18n="l_state"></span><select id="lCode"></select></label>
     <label class="f"><span data-i18n="l_pin"></span><input id="lPin" type="password" inputmode="numeric" autocomplete="current-password" maxlength="12" required></label>
     <div class="err" id="lErr" role="alert"></div>
     <div class="row"><button type="button" id="lCancel" data-i18n="l_cancel"></button><button type="submit" class="primary" id="lGo" data-i18n="l_go"></button></div>
@@ -422,10 +432,10 @@ en:{
  decl:"We, the undersigned, declare that, in accordance with the present regulations, the registered players are qualified for MAVA competitions.",
  sec:"Honorary Secretary", pres:"President",
  dlOne:"Download O-2 + O-2Bis (Excel)",
- login:"Sign in", logout:c=>`Sign out (${c})`, l_title:"Sign in", l_hint:"Use the PIN the organiser gave your state. Each PIN opens that state's teams only.",
+ login:"Sign in", logout:c=>`Sign out (${c})`, l_title:"Sign in", l_hint:"Enter your state's 6-digit PIN.",
  l_state:"State", l_admin:"Organiser (admin)", l_pin:"PIN", l_go:"Sign in", l_cancel:"Cancel", l_bad:"Wrong PIN. Check it and try again.",
  l_locked:"Too many wrong PINs. Wait 15 minutes, then try again.", l_net:"Cannot reach the server. Check your internet connection.",
- lockTxt:"Sign in to open", ss_auto:t=>"Saved automatically "+t, ss_local:"Changes kept on this device. Saving to the server…",
+ lockTxt:"PIN", openTxt:"Open", ss_auto:t=>"Saved automatically "+t, ss_local:"Changes kept on this device. Saving to the server…",
  ss_conflict:"Someone else saved this team after you opened it. Reload to see their version; your changes are kept on this device.",
  restored:"Unsaved changes from this device were restored.", t_dlok:"File downloaded",
  finH:"Final team (O-2Bis)", finSub:"Pick up to 14 of the registered players, give each a position and mark the captain. The O-2Bis sheet fills in from this.",
@@ -482,10 +492,10 @@ ms:{
  decl:"Kami yang bertandatangan di bawah mengesahkan bahawa, mengikut peraturan semasa, pemain yang didaftarkan layak untuk pertandingan MAVA.",
  sec:"Setiausaha Kehormat", pres:"Presiden",
  dlOne:"Muat turun O-2 + O-2Bis (Excel)",
- login:"Log masuk", logout:c=>`Log keluar (${c})`, l_title:"Log masuk", l_hint:"Guna PIN yang diberi penganjur kepada negeri anda. Setiap PIN hanya membuka pasukan negeri itu.",
+ login:"Log masuk", logout:c=>`Log keluar (${c})`, l_title:"Log masuk", l_hint:"Masukkan PIN 6 digit negeri anda.",
  l_state:"Negeri", l_admin:"Penganjur (admin)", l_pin:"PIN", l_go:"Log masuk", l_cancel:"Batal", l_bad:"PIN salah. Semak dan cuba lagi.",
  l_locked:"Terlalu banyak PIN salah. Tunggu 15 minit, kemudian cuba lagi.", l_net:"Tidak dapat menghubungi pelayan. Semak sambungan internet.",
- lockTxt:"Log masuk untuk buka", ss_auto:t=>"Disimpan automatik "+t, ss_local:"Perubahan disimpan dalam peranti ini. Sedang menyimpan ke pelayan…",
+ lockTxt:"PIN", openTxt:"Dibuka", ss_auto:t=>"Disimpan automatik "+t, ss_local:"Perubahan disimpan dalam peranti ini. Sedang menyimpan ke pelayan…",
  ss_conflict:"Orang lain telah menyimpan pasukan ini selepas anda membukanya. Muat semula untuk lihat versi mereka; perubahan anda kekal dalam peranti ini.",
  restored:"Perubahan yang belum disimpan dalam peranti ini telah dipulihkan.", t_dlok:"Fail dimuat turun",
  finH:"Pasukan akhir (O-2Bis)", finSub:"Pilih sehingga 14 daripada pemain berdaftar, tetapkan posisi dan tandakan kapten. Helaian O-2Bis diisi daripada sini.",
@@ -598,8 +608,10 @@ function renderBoard(){
     paintFlag(btn.querySelector(".flag"),code,name);btn.querySelector(".cd").textContent=code;
     btn.querySelector(".nm").textContent=name;
     btn.querySelector(".chip").textContent=T(stKey(st));
-    btn.querySelector(".cnt").textContent=t?T("players")(n)+(t.finals?" · O-2Bis "+t.finals+"/14":""):"";
-    if(!canOpen(code)){const l=document.createElement("span");l.className="lock";l.textContent=T("lockTxt");btn.querySelector(".st").appendChild(l)}
+    btn.querySelector(".cnt").textContent=t?T("players")(n)+(t.finals?"  ·  O-2Bis "+t.finals+"/14":""):"";
+    {const ok=canOpen(code);if(ok)btn.classList.add("open");const l=document.createElement("span");l.className="lock";
+      l.innerHTML=ok?'<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 8.5l3.2 3L13 4.5"/></svg>':'<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="7" width="10" height="7" rx="1.5"/><path d="M5.5 7V5a2.5 2.5 0 015 0v2"/></svg>';
+      l.append(T(ok?"openTxt":"lockTxt"));btn.querySelector(".st").appendChild(l)}
     btn.addEventListener("click",()=>{if(canOpen(code))openTeam(code,name,sex);else openLogin(code,()=>openTeam(code,name,sex))});
     b.appendChild(btn);
   });
@@ -904,10 +916,15 @@ function openLogin(code,then){
   afterLogin=then||null;const sel=$("lCode");sel.innerHTML="";
   STATES.forEach(([c,n])=>{const o=document.createElement("option");o.value=c;o.textContent=n;sel.appendChild(o)});
   const o=document.createElement("option");o.value="ADMIN";o.textContent=T("l_admin");sel.appendChild(o);
-  sel.value=code||"JHR";$("lPin").value="";$("lErr").textContent="";
+  const fixed=!!code&&code!=="ADMIN";sel.value=code||"JHR";
+  $("lWho").hidden=!fixed;$("lPick").hidden=fixed;
+  if(fixed){const st=STATES.find(x=>x[0]===code);paintFlag($("lFlag"),code,st[1]);$("lName").textContent=st[1]}
+  $("lPin").value="";$("lErr").textContent="";
   try{$("loginDlg").showModal()}catch(e){$("loginDlg").setAttribute("open","")}
   setTimeout(()=>$("lPin").focus(),50);
 }
+$("lPin").addEventListener("input",e=>{const v=e.target.value.replace(/\D/g,"");if(v!==e.target.value)e.target.value=v;$("lErr").textContent="";
+  if($("lCode").value!=="ADMIN"&&v.length===6)$("loginForm").requestSubmit()});
 $("authBtn").addEventListener("click",()=>{if(session){if(dirty&&current)save(false,true);logout()}else openLogin()});
 $("lCancel").addEventListener("click",()=>$("loginDlg").close());
 $("loginForm").addEventListener("submit",async e=>{
@@ -917,7 +934,7 @@ $("loginForm").addEventListener("submit",async e=>{
     if(r==="admin"||r==="state"){
       session={code,pin,role:r};try{sessionStorage.setItem("b16s",JSON.stringify(session))}catch(e){}
       $("loginDlg").close();renderAuth();await loadFull();renderBoard();const f=afterLogin;afterLogin=null;if(f)f();
-    }else $("lErr").textContent=T(r==="locked"?"l_locked":"l_bad");
+    }else{$("lErr").textContent=T(r==="locked"?"l_locked":"l_bad");$("lPin").value="";$("lPin").focus()}
   }catch(err){$("lErr").textContent=T("l_net")}finally{$("lGo").disabled=false}
 });
 async function loadBoard(){
