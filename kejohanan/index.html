@@ -928,6 +928,7 @@ function tick(){const n=new Date();$("#clk-t").textContent=fT.format(n).replace(
   const cl=evId+":"+regState();if(lastClosed!==null&&cl!==lastClosed){lastClosed=cl;applyCfg();if(view!=="set"&&!document.activeElement?.matches?.("#main input,#main select"))render()}lastClosed=cl;
   $("#clk-c").textContent=n>EVENT_END?"Kejohanan telah tamat":n>=EVENT_START?"Kejohanan sedang berlangsung":days<=1?"Kejohanan bermula esok":`${days} hari lagi ke kejohanan`}
 setInterval(tick,1000);applyCfg();
+window.addEventListener("hashchange",()=>{if(/^#[ea]-[a-z0-9]+$/.test(location.hash))location.reload()});
 boot();
 </script>
 </body>
