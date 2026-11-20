@@ -9,6 +9,7 @@ Web pendaftaran pasukan negeri untuk Kejohanan Bola Tampar Remaja B16 Malaysia 2
 
 Fail:
 - `index.html` laman web
+- `kejohanan/` sistem pendaftaran banyak kejohanan (Supabase, PIN): tarikh tutup, denda lewat, gambar pasport, kod & PIN pasukan. Laman: https://hakim14-d.github.io/MAVA_B16/kejohanan/
 - `flags/` bendera negeri (ISO 3166-2:MY)
 - `mava-logo.png`, `favicon.png` logo MAVA
 

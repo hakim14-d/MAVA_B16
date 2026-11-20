@@ -1,0 +1,934 @@
+<!doctype html>
+<html lang="ms">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Pendaftaran Kejohanan Bola Tampar</title>
+<meta name="description" content="Pendaftaran pasukan bola tampar dalam talian: Borang O-2, gambar pasport, tarikh tutup dan denda lewat.">
+<link rel="icon" type="image/png" href="favicon.png">
+<style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+</head>
+<body>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Source+Sans+3:wght@400;600;700&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: navy event band → role tabs → stacked form sections (team, players table, officials, kit, declaration) / admin dashboard */
+:root{
+  --bg:#EEF2F8; --surface:#FFFFFF; --sunk:#F5F7FB; --ink:#0F1B33; --muted:#56637D; --line:#D6DDEA;
+  --band:#13305F; --on-band:#F4F7FD; --band-muted:#AFC0DE;
+  --blue:#1F4E9E; --blue-soft:#E3EBF8; --yellow:#F2C200; --on-yellow:#1B1500;
+  --ok:#1C7C4D; --ok-soft:#E1F3EA; --warn:#9A6200; --warn-soft:#FBF0D6; --bad:#B4322B; --bad-soft:#FBE3E1;
+  --f-display:"Barlow Condensed","Arial Narrow",Arial,sans-serif;
+  --f-body:"Source Sans 3","Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+  --r:8px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0B1222; --surface:#121C31; --sunk:#0F182B; --ink:#E6ECF6; --muted:#97A4BD; --line:#26344F;
+  --band:#0E1F3E; --on-band:#F4F7FD; --band-muted:#9EB0D3;
+  --blue:#86A9EE; --blue-soft:#1B2C4D; --yellow:#F2C94C; --on-yellow:#1B1500;
+  --ok:#5CC48F; --ok-soft:#14301F; --warn:#E5B04D; --warn-soft:#33270F; --bad:#F08079; --bad-soft:#3A1A19;
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0B1222; --surface:#121C31; --sunk:#0F182B; --ink:#E6ECF6; --muted:#97A4BD; --line:#26344F;
+  --band:#0E1F3E; --on-band:#F4F7FD; --band-muted:#9EB0D3;
+  --blue:#86A9EE; --blue-soft:#1B2C4D; --yellow:#F2C94C; --on-yellow:#1B1500;
+  --ok:#5CC48F; --ok-soft:#14301F; --warn:#E5B04D; --warn-soft:#33270F; --bad:#F08079; --bad-soft:#3A1A19;
+  color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.45}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+
+.band{background:var(--band);color:var(--on-band);border-bottom:4px solid var(--yellow)}
+.band-in{max-width:1180px;margin:0 auto;padding:18px 16px 0;display:flex;flex-direction:column;gap:14px}
+.band-top{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:flex-end;justify-content:space-between}
+.eyebrow{font-family:var(--f-mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--band-muted)}
+h1{font-family:var(--f-display);font-weight:700;font-size:clamp(26px,4.4vw,40px);line-height:1;margin:4px 0 0;letter-spacing:.01em;text-wrap:balance;text-transform:uppercase}
+.meta{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:14px;color:var(--band-muted)}
+.meta b{color:var(--on-band);font-weight:600}
+.who{font-size:13px;color:var(--band-muted);text-align:right}
+.who b{display:block;color:var(--on-band);font-size:14px}
+.band-top>div:first-child{flex:1 1 420px;min-width:0}
+.side{flex:none;display:flex;flex-direction:column;align-items:flex-end;gap:10px}
+.clock{display:flex;flex-direction:column;align-items:flex-end;gap:2px;padding:8px 12px;border:1px solid rgba(255,255,255,.18);border-radius:8px;background:rgba(255,255,255,.05)}
+.clock .t{font-family:var(--f-mono);font-size:24px;line-height:1;color:var(--on-band);font-variant-numeric:tabular-nums;letter-spacing:.02em}
+.clock .t .live{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--yellow);margin-right:8px;vertical-align:middle;animation:blink 2s infinite}
+.clock .d{font-size:13px;color:var(--on-band)}
+.clock .c{font-size:12px;color:var(--band-muted)}
+@keyframes blink{50%{opacity:.25}}
+@media (max-width:640px){.side{align-items:flex-start}.clock{align-items:flex-start}.who{text-align:left}}
+.tabs{display:flex;gap:2px;overflow-x:auto}
+.tab{background:transparent;border:0;color:var(--band-muted);padding:10px 16px;font-family:var(--f-display);font-size:18px;font-weight:600;letter-spacing:.03em;text-transform:uppercase;cursor:pointer;border-radius:6px 6px 0 0;white-space:nowrap}
+.tab[aria-selected="true"]{background:var(--yellow);color:var(--on-yellow)}
+.tab:hover:not([aria-selected="true"]){color:var(--on-band)}
+
+main{max-width:1180px;margin:0 auto;padding-inline:16px;padding-block:20px 60px;display:flex;flex-direction:column;gap:18px}
+.notice{border:1px solid var(--line);background:var(--surface);border-radius:var(--r);padding:12px 14px;font-size:14px;display:flex;gap:10px;align-items:flex-start}
+.notice.warn{background:var(--warn-soft);border-color:transparent}
+.notice.info{background:var(--blue-soft);border-color:transparent}
+.notice.ok{background:var(--ok-soft);border-color:transparent}
+.notice strong{font-weight:700}
+
+.teamswitch{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
+.seg{display:inline-flex;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:3px}
+.seg button{border:0;background:transparent;padding:7px 16px;border-radius:999px;cursor:pointer;font-weight:600;display:flex;gap:8px;align-items:center}
+.seg button[aria-pressed="true"]{background:var(--blue);color:var(--surface)}
+.savestate{font-size:13px;color:var(--muted);font-family:var(--f-mono)}
+
+.sec{background:var(--surface);border:1px solid var(--line);border-radius:var(--r)}
+.sec-h{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:baseline;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--line)}
+.sec-h h2{font-family:var(--f-display);font-size:22px;font-weight:700;margin:0;text-transform:uppercase;letter-spacing:.02em}
+.sec-h h2 small{font-family:var(--f-mono);font-size:11px;color:var(--muted);font-weight:500;letter-spacing:.08em;margin-left:8px}
+.sec-h p{margin:0;font-size:13px;color:var(--muted)}
+.sec-b{padding:16px}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px}
+label.f{display:flex;flex-direction:column;gap:5px;font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;min-width:0}
+input.i,select.i{width:100%;border:1px solid var(--line);background:var(--sunk);border-radius:6px;padding:8px 10px;font-size:15px;text-transform:none;letter-spacing:0;font-weight:400;color:var(--ink);min-width:0}
+input.i:focus{background:var(--surface);border-color:var(--blue);outline:none;box-shadow:0 0 0 3px var(--blue-soft)}
+input.i[readonly],input.i:disabled{opacity:.75}
+input.bad{border-color:var(--bad);background:var(--bad-soft)}
+.mono{font-family:var(--f-mono);font-size:13.5px}
+
+/* players table */
+.tbl-wrap{overflow-x:auto}
+table.pl{border-collapse:collapse;width:100%;min-width:1560px;font-size:14px}
+table.pl th{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:700;text-align:left;padding:8px 6px;border-bottom:1px solid var(--line);vertical-align:bottom;background:var(--sunk)}
+table.pl th.grp{text-align:center;border-bottom:1px solid var(--line);color:var(--blue)}
+table.pl td{padding:5px 4px;border-bottom:1px solid var(--line);vertical-align:middle}
+table.pl td .i{padding:6px 7px;font-size:14px}
+table.pl td.n{font-family:var(--f-mono);color:var(--muted);font-size:0;text-align:center;width:28px}
+table.pl td.n::after{content:attr(data-n);font-size:12px}
+table.pl tr.blank td .i{background:transparent}
+td.tick{text-align:center;width:40px}
+.tk{display:inline-flex;cursor:pointer;position:relative}
+.tk input{position:absolute;opacity:0;width:100%;height:100%;margin:0;cursor:pointer}
+.tk span{width:30px;height:30px;border-radius:50%;border:1.5px solid var(--line);display:grid;place-items:center;font-family:var(--f-display);font-weight:700;font-size:16px;color:var(--muted);background:var(--sunk)}
+.tk input:checked+span{border-color:transparent}
+.tk.cap input:checked+span{background:var(--yellow);color:var(--on-yellow)}
+.tk.lib input:checked+span{background:var(--blue);color:var(--surface)}
+.tk input:focus-visible+span{outline:2px solid var(--blue);outline-offset:2px}
+.tk input:disabled+span{opacity:.6}
+.age{font-family:var(--f-mono);font-size:13px;text-align:center;white-space:nowrap}
+.chip{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:700;padding:2px 9px;border-radius:999px;white-space:nowrap}
+.chip.ok{background:var(--ok-soft);color:var(--ok)}
+.chip.warn{background:var(--warn-soft);color:var(--warn)}
+.chip.bad{background:var(--bad-soft);color:var(--bad)}
+.chip.draft{background:var(--blue-soft);color:var(--blue)}
+.chip.mute{background:var(--sunk);color:var(--muted);border:1px solid var(--line)}
+.dot{width:8px;height:8px;border-radius:50%;background:currentColor}
+.iconbtn{border:0;background:transparent;color:var(--muted);cursor:pointer;padding:6px;border-radius:6px;font-size:16px;line-height:1}
+.iconbtn:hover{background:var(--bad-soft);color:var(--bad)}
+.tbl-foot{display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;align-items:center;padding:12px 16px;border-top:1px solid var(--line);font-size:13px;color:var(--muted)}
+
+/* passport photos (35 x 45 mm ratio) */
+.phc{position:relative;display:inline-block;width:42px}
+.phw{display:grid;place-items:center;width:42px;height:54px;border:1.5px dashed var(--line);border-radius:4px;background:var(--sunk);color:var(--muted);font-size:10px;font-weight:700;line-height:1.1;text-align:center;cursor:pointer;overflow:hidden;position:relative}
+.phw:hover{border-color:var(--blue);color:var(--blue)}
+.phw.has{border-style:solid;border-color:var(--line)}
+.phw img{width:100%;height:100%;object-fit:cover;display:block}
+.phw input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.phw input:disabled{cursor:default}
+.phw:focus-within{outline:2px solid var(--blue);outline-offset:2px}
+.phw.busy::after{content:"…";position:absolute;inset:0;display:grid;place-items:center;background:var(--surface);opacity:.85;font-size:18px}
+.phx{position:absolute;top:-7px;right:-7px;width:18px;height:18px;border-radius:50%;border:0;background:var(--bad);color:var(--surface);font-size:11px;line-height:18px;padding:0;cursor:pointer;font-weight:700}
+.phx:focus-visible{outline:2px solid var(--blue);outline-offset:1px}
+td.ph{width:56px;text-align:center}
+.off .ph{display:flex}
+/* officials */
+.off{display:grid;grid-template-columns:64px minmax(150px,1fr) minmax(200px,2.2fr) minmax(140px,1fr);gap:8px 12px;align-items:center}
+.off .role{font-weight:600;font-size:14px}
+.off .role span{font-family:var(--f-mono);color:var(--muted);font-size:12px;margin-right:8px}
+.off .hd{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:700}
+
+.kit{display:grid;grid-template-columns:110px 1fr 1fr;gap:8px 12px;align-items:center;max-width:620px}
+.kit .hd{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:700}
+.kit .lbl{font-weight:600}
+
+.decl{display:flex;gap:10px;align-items:flex-start;font-size:15px}
+.decl input{width:20px;height:20px;margin-top:2px;accent-color:var(--blue)}
+.checks{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px;font-size:14px}
+.checks li{display:flex;gap:8px;align-items:flex-start}
+.checks li::before{content:"";flex:none;width:8px;height:8px;border-radius:50%;margin-top:7px;background:var(--warn)}
+.checks li.bad::before{background:var(--bad)}
+
+.actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.btn{border:1px solid var(--line);background:var(--surface);padding:10px 16px;border-radius:6px;font-weight:700;cursor:pointer;display:inline-flex;gap:8px;align-items:center;font-size:14px}
+.btn:hover{border-color:var(--blue);color:var(--blue)}
+.btn.primary{background:var(--blue);border-color:var(--blue);color:var(--surface)}
+.btn.primary:hover{filter:brightness(1.1);color:var(--surface)}
+.btn.go{background:var(--yellow);border-color:var(--yellow);color:var(--on-yellow)}
+.btn.go:hover{filter:brightness(1.05);color:var(--on-yellow)}
+.btn.danger{color:var(--bad)}
+.btn:disabled{opacity:.5;cursor:not-allowed;filter:none}
+.btn.sm{padding:6px 10px;font-size:13px}
+
+/* settings */
+.setgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+.setgrid .span2{grid-column:1/-1}
+.modes{display:flex;flex-wrap:wrap;gap:8px}
+.modes label{display:flex;gap:8px;align-items:flex-start;border:1px solid var(--line);border-radius:8px;padding:10px 12px;cursor:pointer;flex:1 1 200px;background:var(--sunk)}
+.modes label:has(input:checked){border-color:var(--blue);background:var(--blue-soft)}
+.modes input{accent-color:var(--blue);margin-top:3px}
+.modes b{display:block;font-size:14px}
+.modes small{color:var(--muted);font-size:12.5px}
+.hint{font-size:12.5px;color:var(--muted);text-transform:none;letter-spacing:0;font-weight:400}
+.evgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+.evc{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.evc.draft{border-style:dashed}
+.evc h3{font-family:var(--f-display);font-size:22px;line-height:1.1;margin:0;text-transform:uppercase;text-wrap:balance}
+.evc .em{font-size:14px;color:var(--muted);display:flex;flex-direction:column;gap:2px}
+.evc .em b{color:var(--ink);font-weight:600}
+.evc .chips{display:flex;flex-wrap:wrap;gap:6px}
+.evc .actions{margin-top:auto}
+.evnew{border:2px dashed var(--line);background:transparent;border-radius:var(--r);min-height:180px;display:grid;place-items:center;font-family:var(--f-display);font-size:20px;font-weight:700;text-transform:uppercase;color:var(--blue);cursor:pointer}
+.evnew:hover{border-color:var(--blue);background:var(--blue-soft)}
+.share{display:flex;flex-direction:column;gap:12px}
+.share ol{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px;font-size:14px}
+.copyrow{display:flex;gap:8px;flex-wrap:wrap}
+.copyrow input,.share textarea{flex:1 1 260px;min-width:0}
+.share textarea{width:100%;min-height:150px;border:1px solid var(--line);background:var(--sunk);border-radius:6px;padding:10px;font:14px/1.45 var(--f-body);color:var(--ink);resize:vertical}
+.notice.bad{background:var(--bad-soft);border-color:transparent}
+.fine{font-family:var(--f-display);font-size:20px;font-weight:700;color:var(--bad)}
+.preview{border:1px dashed var(--line);border-radius:8px;padding:12px 14px;background:var(--sunk);font-size:14px;display:flex;flex-direction:column;gap:4px}
+.preview .pt{font-family:var(--f-display);font-size:22px;font-weight:700;text-transform:uppercase;line-height:1.05}
+/* dashboard */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px}
+.stat .k{font-size:12px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:700}
+.stat .v{font-family:var(--f-display);font-size:40px;font-weight:700;line-height:1.05;font-variant-numeric:tabular-nums}
+.stat .s{font-size:13px;color:var(--muted)}
+.bar{display:flex;height:6px;border-radius:3px;overflow:hidden;background:var(--sunk);margin-top:8px}
+.bar i{display:block;height:100%}
+table.dash{border-collapse:collapse;width:100%;min-width:820px;font-size:14px}
+table.dash th{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);background:var(--sunk)}
+table.dash td{padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:middle;font-variant-numeric:tabular-nums}
+table.dash tr:hover td{background:var(--sunk)}
+.tname{font-weight:700}
+.tname small{display:block;font-weight:400;color:var(--muted);font-size:12.5px}
+.filters{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.filters .i{width:auto;min-width:0}
+.empty{padding:40px 16px;text-align:center;color:var(--muted)}
+.empty b{display:block;color:var(--ink);font-family:var(--f-display);font-size:22px;text-transform:uppercase;margin-bottom:4px}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:6px;font-weight:600;font-size:14px;max-width:calc(100% - 32px);z-index:10}
+.back{border:0;background:none;color:var(--blue);font-weight:700;cursor:pointer;padding:0}
+
+@media (max-width:760px){
+  table.pl{min-width:0}
+  table.pl thead{display:none}
+  table.pl,table.pl tbody,table.pl tr,table.pl td{display:block;width:100%}
+  table.pl tr{display:grid;grid-template-columns:1fr 1fr;gap:6px 10px;padding:12px 14px;border-bottom:1px solid var(--line);position:relative}
+  table.pl td{border:0;padding:0}
+  table.pl td[data-l]::before{content:attr(data-l);display:block;font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:700;margin-bottom:2px}
+  table.pl td.wide{grid-column:1/-1}
+  table.pl td.n::after{content:none}
+  table.pl td.n{text-align:left;font-size:13px;color:var(--blue);font-weight:700;grid-column:1/-1;width:auto}
+  table.pl td.rm{position:absolute;right:8px;top:6px;width:auto}
+  table.pl td.ph{text-align:left;width:auto}
+  table.pl td.age{text-align:left}
+  table.pl td.tick{text-align:left;width:auto}
+  .off{grid-template-columns:1fr 1fr}
+  .off{grid-template-columns:52px 1fr 1fr}
+  .off .ph{grid-row:span 2}
+  .off .role{grid-column:2/-1;margin-top:6px}
+  .off .hd{display:none}
+}
+.credit{max-width:1180px;margin:0 auto;padding-inline:16px;padding-block:0 28px;text-align:center;font-size:12px;color:var(--muted);letter-spacing:.04em}
+.credit b{font-family:var(--f-display);font-size:13px;letter-spacing:.12em;color:var(--ink)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+<header class="band">
+  <div class="band-in">
+    <div class="band-top">
+      <div>
+        <div class="eyebrow">Borang O-2 · Malaysia Volleyball Association</div>
+        <h1 id="ev-title">Kejohanan Bola Tampar Remaja B16 Malaysia 2026</h1>
+        <div class="meta" id="ev-meta"><span><b>14–18 Nov 2026</b></span><span>Kota Kinabalu, Sabah</span><span>Tarikh tutup borang: <b>1 Okt 2026</b></span></div>
+      </div>
+      <div class="side">
+        <div class="clock" aria-live="off"><div class="t"><span class="live" aria-hidden="true"></span><span id="clk-t">--:--:--</span></div><div class="d" id="clk-d"></div><div class="c" id="clk-c"></div></div>
+        <div class="who" id="who"><b>Memuatkan…</b>Menyemak akses anda</div>
+      </div>
+    </div>
+    <nav class="tabs" role="tablist" id="tabs">
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+  <div class="notice info">Memuatkan borang…</div>
+</main>
+<footer class="credit">© 2026 <b>ZAINDRA</b></footer>
+<div class="toast" id="toast" hidden></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+const MAX_PLAYERS = 20, MIN_PLAYERS = 6;
+let ELIG_YEAR = 2011, EVENT_YEAR = 2026;
+const DEFAULT_CFG = {title:"",start:"",end:"",venue:"",deadline:"",mode:"auto",eligYear:2011,after:"fine",fineAmount:0,fineNote:"",visible:false};
+let events=new Map(), eventsLoaded=false, evId=null, isNewEvent=false;
+let cfg = {...DEFAULT_CFG}, cfgLoaded=false, setDirty=false, lastClosed=null;
+const isDate=v=>/^\d{4}-\d{2}-\d{2}$/.test(v||"");
+const isDT=v=>/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(v||"");
+function sanitizeCfg(c){const o={...DEFAULT_CFG};if(!c)return o;
+  if(typeof c.title==="string")o.title=c.title.slice(0,160);
+  if(typeof c.venue==="string")o.venue=c.venue.slice(0,120);
+  if(isDate(c.start))o.start=c.start;if(isDate(c.end))o.end=c.end;
+  if(isDT(c.deadline))o.deadline=c.deadline;
+  if(["auto","open","closed"].includes(c.mode))o.mode=c.mode;
+  if(["fine","lock"].includes(c.after))o.after=c.after;
+  const fa=+c.fineAmount;if(fa>=0&&fa<=100000)o.fineAmount=Math.round(fa*100)/100;
+  if(typeof c.fineNote==="string")o.fineNote=c.fineNote.slice(0,400);
+  o.visible=c.visible===true;if(typeof c.createdBy==="string")o.createdBy=c.createdBy;if(typeof c.createdAt==="string")o.createdAt=c.createdAt;
+  const ey=+c.eligYear;if(ey>=1990&&ey<=2035)o.eligYear=ey;return o}
+const myt=(d,end)=>new Date(d+(end?"T23:59:59":"T00:00:00")+"+08:00");
+const deadlineDate=(c=cfg)=>isDT(c.deadline)?new Date(c.deadline+":00+08:00"):null;
+const pastDeadline=(c=cfg)=>{const d=deadlineDate(c);return c.mode==="auto"&&!!d&&Date.now()>d};
+function isClosed(c=cfg){return c.mode==="closed"||(pastDeadline(c)&&c.after==="lock")}
+function isLate(c=cfg){return pastDeadline(c)&&c.after==="fine"}
+function teamLate(t,c=cfg){const d=deadlineDate(c);return c.mode!=="open"&&!!d&&t.status==="submitted"&&!!t.submittedAt&&new Date(t.submittedAt)>d}
+const money=n=>"RM "+(+n).toLocaleString("ms-MY",{minimumFractionDigits:2,maximumFractionDigits:2});
+const fineText=(c=cfg)=>c.fineAmount>0?money(c.fineAmount):"denda mengikut ketetapan urus setia";
+const fmtDay=(d,o)=>new Intl.DateTimeFormat("ms-MY",{timeZone:"UTC",...o}).format(new Date(d+"T00:00:00Z"));
+function fmtRange(c=cfg,month="long"){const a=c.start,b=c.end;if(!isDate(a))return"Tarikh belum ditetapkan";if(!isDate(b)||a===b)return fmtDay(a,{day:"numeric",month,year:"numeric"});
+  if(a.slice(0,7)===b.slice(0,7))return`${+a.slice(8)}–${+b.slice(8)} ${fmtDay(a,{month,year:"numeric"})}`;
+  if(a.slice(0,4)===b.slice(0,4))return`${fmtDay(a,{day:"numeric",month})} – ${fmtDay(b,{day:"numeric",month,year:"numeric"})}`;
+  return`${fmtDay(a,{day:"numeric",month,year:"numeric"})} – ${fmtDay(b,{day:"numeric",month,year:"numeric"})}`}
+function fmtDeadline(c=cfg,month="short"){if(!isDT(c.deadline))return"belum ditetapkan";const[d,t]=c.deadline.split("T");return`${fmtDay(d,{day:"numeric",month,year:"numeric"})}, ${t}`}
+function leftText(ms){const d=Math.floor(ms/86400000),h=Math.floor(ms%86400000/3600000),m=Math.floor(ms%3600000/60000);return d?`${d} hari ${h} jam`:h?`${h} jam ${m} minit`:`${m} minit`}
+function regState(c=cfg){if(c.mode==="closed")return"closed";if(c.mode==="open")return"open";const d=deadlineDate(c);if(!d)return"open";const ms=d-Date.now();if(ms>0)return ms<3*86400000?"soon":"open";return c.after==="lock"?"closed":"late"}
+function regStatusText(c=cfg){const st=regState(c);if(c.mode==="closed")return"Ditutup oleh urus setia";if(c.mode==="open"||!deadlineDate(c))return"Dibuka (tiada had masa)";
+  if(st==="late")return`Tarikh tutup telah lepas (${fmtDeadline(c)}). Pendaftaran lewat dikenakan denda ${fineText(c)}`;
+  if(st==="closed")return"Ditutup pada "+fmtDeadline(c);
+  return`Dibuka sehingga ${fmtDeadline(c)} (${leftText(deadlineDate(c)-Date.now())} lagi)`}
+function stateChip(c){const st=regState(c);if(!c.visible)return`<span class="chip mute">Draf · belum dikongsi</span>`;
+  return st==="closed"?`<span class="chip bad"><i class="dot"></i>Ditutup</span>`:st==="late"?`<span class="chip bad"><i class="dot"></i>Lewat · denda</span>`:st==="soon"?`<span class="chip warn"><i class="dot"></i>Tutup tidak lama lagi</span>`:`<span class="chip ok"><i class="dot"></i>Dibuka</span>`}
+function applyCfg(){if(!evId){EVENT_YEAR=new Date().getFullYear();$("#ev-title").textContent="Pendaftaran Kejohanan Bola Tampar";
+    $("#ev-meta").innerHTML=`<span>${isAdmin?"Cipta, urus dan kongsi kejohanan kepada pengurus pasukan":"Pilih kejohanan untuk mendaftar pasukan anda"}</span>`;document.title="Pendaftaran Kejohanan";tick();return}
+  EVENT_YEAR=+(cfg.start||"").slice(0,4)||new Date().getFullYear();ELIG_YEAR=cfg.eligYear;
+  $("#ev-title").textContent=cfg.title||"Kejohanan tanpa nama";
+  const st=regState(cfg);
+  $("#ev-meta").innerHTML=`<span><b>${esc(fmtRange(cfg,"short"))}</b></span><span>${esc(cfg.venue||"Tempat belum ditetapkan")}</span><span>Tarikh tutup borang: <b>${esc(cfg.mode==="open"?"Tiada had":fmtDeadline())}</b>${st==="closed"?' <span class="chip bad" style="margin-left:4px">Ditutup</span>':st==="late"?' <span class="chip bad" style="margin-left:4px">Lewat · denda</span>':""}</span>`;
+  document.title=cfg.title&&cfg.title.length<=48?cfg.title:"Pendaftaran Kejohanan";tick()}
+const STATES = [["Johor","JHR"],["Kedah","KDH"],["Kelantan","KTN"],["Melaka","MLK"],["Negeri Sembilan","NSN"],["Pahang","PHG"],["Perak","PRK"],["Perlis","PLS"],["Pulau Pinang","PNG"],["Sabah","SBH"],["Sarawak","SWK"],["Selangor","SGR"],["Terengganu","TRG"],["W.P. Kuala Lumpur","KUL"],["W.P. Labuan","LBN"],["W.P. Putrajaya","PJY"]];
+const OFFICIALS = [["manager","Pengurus Pasukan","Team Manager"],["coach","Ketua Jurulatih","Head Coach"],["asst1","Penolong Jurulatih 1","Assistant Coach 1"],["asst2","Penolong Jurulatih 2","Assistant Coach 2"],["therapist","Ahli Terapi / Jurulatih Fizikal","Therapist / Trainer"],["referee","Pengadil","Referee"]];
+const SEX = {L:{ms:"Lelaki",en:"MEN"},P:{ms:"Perempuan",en:"WOMEN"}};
+const PF = ["shirt","name","position","chinese","ic","dob","weight","height","spike","block","intl","natl","other"];
+const POS = [["S","Setter (Tosser)"],["OH","Outside Hitter"],["OP","Opposite"],["MB","Middle Blocker"],["L","Libero"]];
+const posName = c => (POS.find(p=>p[0]===c)||["",""])[1];
+
+const SB_URL="https://xfvvwsoljdpzwmbrrylk.supabase.co";
+const SB_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhmdnZ3c29samRwendtYnJyeWxrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE1MzE4NzQsImV4cCI6MjA5NzEwNzg3NH0.49EkfwDmI-Z-SQovw56FrH2kYx1Qk6nHOxK40s2eBC0";
+let uid=null, isAdmin=false, demo=false, sess=null, superEvents=[], loginTab="team", loginEvent="", accList=[], newPins=[];
+let myDoc=null, allDocs=new Map(), names={}; // team code -> {teams:{L,P}}
+let photos={}, photoSubs={}; // team code -> {slot: dataURL}
+let view="form";            // form | dash | edit
+let cur={docId:null,key:"L"}; // team being edited
+let seq=0, draft=null, dirty=false, saveTimer=null, saving=false, lastSaved=null, armSubmit=false, dashFilter={q:"",sex:"",status:""};
+
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function toast(msg){const t=$("#toast");t.textContent=msg;t.hidden=false;clearTimeout(toast._t);toast._t=setTimeout(()=>t.hidden=true,2600)}
+const blankPlayer=()=>Object.fromEntries(PF.map(k=>[k,""]));
+function blankTeam(key){return{sex:key,team:"",code:"",players:Array.from({length:12},blankPlayer),officials:Object.fromEntries(OFFICIALS.map(o=>[o[0],{name:"",tel:""}])),captain:null,kit:{shirt1:"",shirt2:"",shorts1:"",shorts2:""},contact:{name:"",tel:"",email:""},declared:false,status:"draft",updatedAt:null,submittedAt:null}}
+function normTeam(t,key){const b=blankTeam(key);if(!t)return b;const o=JSON.parse(JSON.stringify(t));o.players=(o.players||[]).map(p=>({...blankPlayer(),...p}));if(!o.players.length)o.players=b.players;o.officials={...b.officials,...(o.officials||{})};o.kit={...b.kit,...(o.kit||{})};o.contact={...b.contact,...(o.contact||{})};return{...b,...o,sex:key}}
+
+/* ---------- validation ---------- */
+function fmtIC(v){const d=String(v).replace(/\D/g,"").slice(0,12);if(d.length<=6)return d;if(d.length<=8)return d.slice(0,6)+"-"+d.slice(6);return d.slice(0,6)+"-"+d.slice(6,8)+"-"+d.slice(8)}
+function icToDob(ic){const d=String(ic).replace(/\D/g,"");if(d.length<6)return"";const yy=+d.slice(0,2),mm=+d.slice(2,4),dd=+d.slice(4,6);if(mm<1||mm>12||dd<1||dd>31)return"";const y=yy<=(EVENT_YEAR%100)?2000+yy:1900+yy;return`${y}-${String(mm).padStart(2,"0")}-${String(dd).padStart(2,"0")}`}
+const filled=p=>PF.some(k=>String(p[k]??"").trim()!=="");
+function playerIssues(p,all){const out=[];if(!filled(p))return out;
+  if(!String(p.shirt).trim())out.push(["bad","No. baju kosong"]);else if(!/^\d{1,2}$/.test(String(p.shirt).trim()))out.push(["bad","No. baju mesti 1–99"]);
+  if(!String(p.name).trim())out.push(["bad","Nama kosong"]);
+  if(!p.position)out.push(["bad","Posisi belum dipilih"]);
+  const ic=String(p.ic).replace(/\D/g,"");if(!ic)out.push(["bad","No. KP kosong"]);else if(ic.length!==12)out.push(["bad","No. KP mesti 12 digit"]);
+  if(!p.dob)out.push(["bad","Tarikh lahir kosong"]);else{const y=+p.dob.slice(0,4);if(y<ELIG_YEAR)out.push(["warn",`Lahir ${y} (sebelum ${ELIG_YEAR}): semak kelayakan`]);if(ic.length===12&&icToDob(ic)&&icToDob(ic)!==p.dob)out.push(["warn","Tarikh lahir tidak sepadan dengan No. KP"])}
+  if(String(p.shirt).trim()&&all.filter(q=>filled(q)&&String(q.shirt).trim()===String(p.shirt).trim()).length>1)out.push(["bad","No. baju berulang"]);
+  if(ic&&all.filter(q=>String(q.ic).replace(/\D/g,"")===ic).length>1)out.push(["bad","No. KP berulang"]);
+  return out}
+function teamIssues(t){const out=[];if(!t.team.trim())out.push(["bad","Nama pasukan belum diisi"]);
+  const ps=t.players.filter(filled);if(ps.length<MIN_PLAYERS)out.push(["bad",`Sekurang-kurangnya ${MIN_PLAYERS} pemain diperlukan (kini ${ps.length})`]);
+  t.players.forEach((p,i)=>playerIssues(p,t.players).forEach(([lv,m])=>out.push([lv,`Pemain ${i+1}: ${m}`])));
+  if(t.captain==null||!t.players[t.captain]||!filled(t.players[t.captain]))out.push(["bad","Kapten pasukan belum dipilih (lajur C)"]);
+  const nl=t.players.filter(p=>filled(p)&&p.position==="L").length;if(nl>2)out.push(["bad",`Maksimum 2 libero (kini ${nl})`]);else if(!nl&&ps.length)out.push(["warn","Tiada libero dipilih (lajur L)"]);
+  if(!t.officials.manager.name.trim())out.push(["bad","Nama Pengurus Pasukan belum diisi"]);
+  if(!t.officials.coach.name.trim())out.push(["bad","Nama Ketua Jurulatih belum diisi"]);
+  if(!t.kit.shirt1.trim()||!t.kit.shorts1.trim())out.push(["warn","Warna jersi No. 1 belum lengkap"]);
+  if(!t.declared)out.push(["bad","Pengakuan belum ditanda"]);
+  return out}
+
+/* ---------- photos ---------- */
+const slotP=(key,i)=>`${key}-p${i}`, slotO=(key,role)=>`${key}-o-${role}`;
+const PH_W=210, PH_H=270; // 35x45 mm passport ratio
+async function loadPhotos(code){try{const r=await rpc("kj_photo_list",{...A(),p_team:code});photos[code]=r.photos||{};}catch(e){photos[code]=photos[code]||{}}return photos[code]}
+function watchPhotos(code){loadPhotos(code).then(()=>{if(cur.docId===code)refreshPhotos()})}
+async function fileToPassport(file){if(!file.type.startsWith("image/"))throw new Error("Fail mesti gambar (JPG atau PNG)");
+  let bmp;try{bmp=await createImageBitmap(file)}catch(e){const url=URL.createObjectURL(file);try{bmp=await new Promise((ok,no)=>{const im=new Image();im.onload=()=>ok(im);im.onerror=()=>no(new Error("Format gambar tidak disokong. Guna JPG atau PNG."));im.src=url})}finally{setTimeout(()=>URL.revokeObjectURL(url),1000)}}
+  const w=bmp.width,h=bmp.height,r=PH_W/PH_H;let sw=w,sh=h;if(w/h>r)sw=h*r;else sh=w/r;const sx=(w-sw)/2,sy=Math.max(0,(h-sh)*0.35);
+  const c=document.createElement("canvas");c.width=PH_W;c.height=PH_H;const g=c.getContext("2d");g.fillStyle="#fff";g.fillRect(0,0,PH_W,PH_H);g.imageSmoothingQuality="high";g.drawImage(bmp,sx,sy,sw,sh,0,0,PH_W,PH_H);
+  return c.toDataURL("image/jpeg",0.8)}
+function photoInner(slot,dis,label){const img=(photos[cur.docId]||{})[slot];
+  return `<label class="phw ${img?"has":""}" title="${img?"Tukar gambar":"Muat naik gambar saiz pasport"}">${img?`<img src="${img}" alt="Gambar ${esc(label)}">`:"+<br>Gambar"}<input type="file" accept="image/jpeg,image/png,image/webp,image/*" data-up="${slot}" aria-label="Muat naik gambar ${esc(label)}" ${dis}></label>${img&&!dis?`<button type="button" class="phx" data-phx="${slot}" aria-label="Buang gambar ${esc(label)}" title="Buang gambar">×</button>`:""}`}
+function refreshPhotos(){if(!draft)return;const dis=canEditDraft()?"":"disabled";document.querySelectorAll(".phc[data-slot]").forEach(el=>{el.innerHTML=photoInner(el.dataset.slot,dis,el.dataset.label)});const is=$("#issues");if(is)is.innerHTML=issuesHTML(formIssues())}
+async function uploadPhoto(slot,file,box){box?.classList.add("busy");try{const img=await fileToPassport(file);
+    await rpc("kj_photo_set",{...A(),p_team:cur.docId,p_slot:slot,p_img:img});(photos[cur.docId]=photos[cur.docId]||{})[slot]=img;refreshPhotos();toast("Gambar disimpan")}
+  catch(e){toast("Gambar tidak disimpan: "+(e?.message||"gambar tidak dapat dibaca"))}finally{box?.classList.remove("busy")}}
+async function removePhoto(slot){try{await rpc("kj_photo_set",{...A(),p_team:cur.docId,p_slot:slot,p_img:null});if(photos[cur.docId])delete photos[cur.docId][slot];refreshPhotos();toast("Gambar dibuang")}catch(e){toast("Tidak dapat membuang gambar: "+(e?.message||e?.code))}}
+function photoIssues(t,ph){const out=[];const miss=t.players.map((p,i)=>filled(p)&&!ph[slotP(t.sex,i)]?i+1:0).filter(Boolean);
+  if(miss.length)out.push(["warn",`Gambar pasport belum dimuat naik: pemain ${miss.slice(0,6).join(", ")}${miss.length>6?" …":""}`]);
+  const om=OFFICIALS.filter(o=>t.officials[o[0]].name.trim()&&!ph[slotO(t.sex,o[0])]).map(o=>o[1]);if(om.length)out.push(["warn",`Gambar pegawai belum dimuat naik: ${om.join(", ")}`]);return out}
+function formIssues(){return teamIssues(draft).concat(photoIssues(draft,photos[cur.docId]||{}))}
+
+/* ---------- data (Supabase, PIN-checked functions) ---------- */
+const ERR={bad_pin:"Kod atau PIN salah.",locked:"Terlalu banyak cubaan salah. Cuba lagi selepas 15 minit.",forbidden:"Anda tiada akses untuk tindakan ini.",closed:"Pendaftaran telah ditutup.",already_submitted:"Borang ini telah dihantar dan dikunci. Hubungi urus setia untuk pindaan.",no_event:"Kejohanan tidak dijumpai.",has_teams:"Kejohanan ini sudah ada pendaftaran.",bad_new_pin:"PIN mesti 4 hingga 12 aksara (huruf atau nombor).",bad_team_code:"Kod pasukan mesti 2 hingga 10 huruf atau nombor.",bad_image:"Gambar tidak sah atau terlalu besar.",too_big:"Data borang terlalu besar.",bad_cfg:"Tetapan tidak sah.",bad_input:"Maklumat tidak sah."};
+async function rpc(fn,args){let r;try{r=await fetch(`${SB_URL}/rest/v1/rpc/${fn}`,{method:"POST",headers:{apikey:SB_KEY,Authorization:"Bearer "+SB_KEY,"Content-Type":"application/json"},body:JSON.stringify(args||{})})}catch(e){throw new Error("Tiada sambungan internet. Cuba lagi.")}
+  const j=await r.json().catch(()=>null);if(!r.ok)throw new Error(j?.message||("Ralat pelayan ("+r.status+")"));
+  if(j&&typeof j==="object"&&!Array.isArray(j)&&j.error){const e=new Error(ERR[j.error]||j.error);e.code=j.error;throw e}return j}
+const A=()=>({p_event:evId,p_code:sess?.code,p_pin:sess?.pin});
+function saveSess(){try{sess?sessionStorage.setItem("kj_sess",JSON.stringify(sess)):sessionStorage.removeItem("kj_sess")}catch(e){}}
+function loadSess(){try{return JSON.parse(sessionStorage.getItem("kj_sess")||"null")}catch(e){return null}}
+function hashEvent(){const h=(location.hash||"").slice(1);return /^[ea]-[a-z0-9]+$/.test(h)?h.slice(2):null}
+function rowToTeam(row,k){return row?normTeam({...(row.data||{}),status:row.status,submittedAt:row.submitted_at,finePaid:!!row.fine_paid,updatedAt:row.updated_at},k):undefined}
+function teamToData(t){const o=JSON.parse(JSON.stringify(t));delete o.status;delete o.submittedAt;delete o.finePaid;delete o.updatedAt;return o}
+async function loadTeam(code){const r=await rpc("kj_team_get",{...A(),p_team:code});const d={teams:{L:rowToTeam(r.teams?.L,"L"),P:rowToTeam(r.teams?.P,"P")}};
+  if(code===uid)myDoc=d;else{const old=allDocs.get(code);allDocs.set(code,{...d,label:old?.label||""})}return d}
+async function loadBoard(){const r=await rpc("kj_board",A());const m=new Map();for(const row of r.teams||[]){const d=m.get(row.code)||{teams:{},label:row.label||""};d.teams[row.sex]=rowToTeam(row,row.sex);m.set(row.code,d);names[row.code]=row.label||""}allDocs=m;return m}
+async function refreshEvent(){if(!evId)return;try{if(sess.role==="super"){const r=await rpc("kj_events_all",{p_pin:sess.pin});superEvents=r.events||[];const e=superEvents.find(x=>x.id===evId);if(e){cfg=sanitizeCfg(e.cfg);events.set(evId,cfg)}}
+  else{const r=await rpc("kj_login",{p_event:evId,p_code:sess.code,p_pin:sess.pin});cfg=sanitizeCfg(r.event?.cfg);events.set(evId,cfg)}applyCfg()}catch(e){}}
+
+async function doLogin(role,event,code,pin){
+  const c=role==="super"?"SUPER":role==="admin"?"ADMIN":String(code||"").trim().toUpperCase();
+  const r=await rpc("kj_login",{p_event:role==="super"?null:event,p_code:c,p_pin:pin});
+  sess={role:r.role,event:role==="super"?null:event,code:c,pin,label:r.label||""};saveSess();await enter(r)}
+async function enter(r){isAdmin=sess.role!=="team";uid=sess.role==="team"?sess.code:null;renderWho();
+  if(sess.role==="super"){evId=null;await loadSuper();view="super";renderTabs();applyCfg();render();return}
+  evId=r.event.id;cfg=sanitizeCfg(r.event.cfg);events.set(evId,cfg);applyCfg();
+  if(sess.role==="team"){names[uid]=sess.label;await loadTeam(uid);await loadPhotos(uid);cur={docId:uid,key:"L"};draft=null;syncDraft();if(!draft.team&&sess.label)draft.team=sess.label;if(!draft.code)draft.code=uid;view="form"}
+  else{await loadBoard();view="dash"}
+  renderTabs();render();window.scrollTo(0,0)}
+async function loadSuper(){const r=await rpc("kj_events_all",{p_pin:sess.pin});superEvents=r.events||[];for(const e of superEvents)events.set(e.id,sanitizeCfg(e.cfg))}
+async function superOpen(id,v){evId=id;isNewEvent=false;cfg=sanitizeCfg(events.get(id));applyCfg();allDocs=new Map();try{await loadBoard()}catch(e){toast(e.message)}view=v||"dash";renderTabs();render();window.scrollTo(0,0)}
+async function logout(){sess=null;saveSess();evId=null;isAdmin=false;uid=null;myDoc=null;allDocs=new Map();photos={};draft=null;dirty=false;newPins=[];accList=[];superEvents=[];loginTab="team";cfg={...DEFAULT_CFG};view="login";applyCfg();renderWho();renderTabs();render();
+  try{const r=await rpc("kj_events_public");events=new Map((r||[]).map(e=>[e.id,sanitizeCfg(e.cfg)]));if(view==="login")render()}catch(e){}}
+async function boot(){
+  try{const r=await rpc("kj_events_public");events=new Map((r||[]).map(e=>[e.id,sanitizeCfg(e.cfg)]))}catch(e){toast(e.message)}
+  eventsLoaded=true;const h=hashEvent();if(h)loginEvent=h;if((location.hash||"").startsWith("#a-"))loginTab="admin";
+  const s0=loadSess();
+  if(s0){sess=s0;try{const r=await rpc("kj_login",{p_event:s0.event,p_code:s0.code,p_pin:s0.pin});await enter(r);return}catch(e){sess=null;saveSess()}}
+  view="login";renderWho();renderTabs();render();
+  setInterval(()=>{if(view==="dash"&&!document.hidden&&!document.activeElement?.matches?.("#main input,#main select"))loadBoard().then(()=>{if(view==="dash")render()}).catch(()=>{})},60000)}
+function showErr(e){toast(e?.message||"Ralat sambungan")}
+function docFor(id){return id===uid?myDoc:allDocs.get(id)}
+function teamOf(d,k){return d?.teams?.[k]}
+function syncDraft(){if(!evId||(draft&&(dirty||saving)))return;const d=docFor(cur.docId);draft=normTeam(teamOf(d,cur.key),cur.key);if(!isAdmin){if(!draft.code)draft.code=uid;if(!draft.team&&sess?.label)draft.team=sess.label}}
+async function writeTeam(code,k,team){const res=await rpc("kj_team_save",{...A(),p_team:code,p_sex:k,p_data:teamToData(team),p_status:team.status==="submitted"?"submitted":"draft"});
+  team.status=res.status;team.submittedAt=res.submitted_at;team.finePaid=!!res.fine_paid;team.updatedAt=res.updated_at;
+  const d=docFor(code)||{teams:{}};d.teams[k]=JSON.parse(JSON.stringify(team));if(code===uid)myDoc=d;else allDocs.set(code,d);return res}
+function canEditDraft(){return isAdmin||(draft.status!=="submitted"&&!isClosed())}
+
+function markDirty(){dirty=true;seq++;lastSaved=null;armSubmit=false;setSaveState("Belum disimpan…");clearTimeout(saveTimer);saveTimer=setTimeout(()=>save(),1500)}
+async function save(extra){clearTimeout(saveTimer);
+  if(saving){await saving;}
+  const prev=extra?Object.fromEntries(Object.keys(extra).map(k=>[k,draft[k]])):null;
+  Object.assign(draft,extra||{});const team=JSON.parse(JSON.stringify(draft));const mySeq=seq;
+  saving=(async()=>{try{
+      const res=await writeTeam(cur.docId,cur.key,team);draft.status=res.status;draft.submittedAt=res.submitted_at;draft.finePaid=!!res.fine_paid;draft.updatedAt=res.updated_at;
+      if(mySeq===seq)dirty=false;lastSaved=new Date();setSaveState("Disimpan "+lastSaved.toLocaleTimeString("ms-MY",{hour:"2-digit",minute:"2-digit"}));return true
+    }catch(e){if(prev)Object.assign(draft,prev);showErr(e);setSaveState("Gagal disimpan");if(e.code==="closed"||e.code==="already_submitted"){dirty=false;await refreshEvent();try{await loadTeam(cur.docId)}catch(_){}draft=null;syncDraft();rerender()}return false}finally{saving=false}})();
+  return saving}
+function setSaveState(t){const el=$("#savestate");if(el)el.textContent=t}
+
+/* ---------- render ---------- */
+function renderWho(){const w=$("#who");if(!sess){w.innerHTML=`<b>Belum log masuk</b>Pengurus pasukan & urus setia`;return}
+  const lbl=sess.role==="super"?"Super Admin":sess.role==="admin"?"Urus Setia Kejohanan":("Pengurus Pasukan · "+esc(sess.code));
+  w.innerHTML=`<b>${lbl}</b>${sess.role==="team"&&sess.label?esc(sess.label)+" · ":""}<button class="back" id="logout" style="color:var(--yellow)">Log keluar</button>`;$("#logout").onclick=async()=>{if(dirty)await save();logout()}}
+function renderTabs(){const n=$("#tabs");let h="";const T=(id,label,sel)=>`<button class="tab" role="tab" id="${id}" aria-selected="${sel}">${label}</button>`;
+  if(!sess)h=T("tab-login","Log Masuk",true);
+  else if(sess.role==="team")h=T("tab-form","Borang Pasukan",true);
+  else if(!evId)h=T("tab-super","Semua Kejohanan",true);
+  else{if(sess.role==="super")h+=T("tab-super","← Kejohanan",false);
+    if(!isNewEvent)h+=T("tab-dash","Papan Pemuka",view==="dash"||view==="edit")+T("tab-acc","Akses Pasukan",view==="acc");
+    h+=T("tab-set",isNewEvent?"Kejohanan Baharu":"Tetapan & Kongsi",view==="set")}
+  n.innerHTML=h;
+  $("#tab-super")&&($("#tab-super").onclick=async()=>{if(dirty)await save();evId=null;isNewEvent=false;applyCfg();try{await loadSuper()}catch(e){}view="super";renderTabs();render()});
+  $("#tab-form")&&($("#tab-form").onclick=()=>setTab("form"));$("#tab-dash")&&($("#tab-dash").onclick=()=>setTab("dash"));$("#tab-set")&&($("#tab-set").onclick=()=>setTab("set"));$("#tab-acc")&&($("#tab-acc").onclick=()=>setTab("acc"))}
+async function setTab(v){if(dirty)await save();view=v;setDirty=false;
+  if(v==="form"){cur.docId=uid;dirty=false;draft=null;syncDraft()}
+  if(v==="dash"){try{await loadBoard()}catch(e){showErr(e)}}
+  if(v==="acc"){try{const r=await rpc("kj_access_list",A());accList=r.access||[]}catch(e){showErr(e)}}
+  renderTabs();render();window.scrollTo(0,0)}
+
+function render(){const m=$("#main");
+  if(!sess||view==="login"){m.dataset.k="";m.innerHTML=loginHTML();bindLogin();return}
+  if(view==="super"||(!evId&&isAdmin)){m.dataset.k="";m.innerHTML=superHTML();bindSuper();return}
+  if(view==="set"&&isAdmin){m.dataset.k="";m.innerHTML=setHTML();bindSet();return}
+  if(view==="acc"&&isAdmin){m.dataset.k="";m.innerHTML=accHTML();bindAcc();return}
+  if(view==="dash"&&isAdmin){m.dataset.k="";const f=document.activeElement?.id==="f-q",pos=f?$("#f-q").selectionStart:0;m.innerHTML=dashHTML();bindDash();if(f){const q=$("#f-q");q.focus();try{q.setSelectionRange(pos,pos)}catch(e){}}return}
+  if(!draft)syncDraft();if(!draft)return;
+  // Avoid wiping focused inputs while typing
+  if(document.activeElement&&m.contains(document.activeElement)&&document.activeElement.matches("input,select")&&m.querySelector("#formroot")&&m.dataset.k===evId+cur.docId+cur.key){refreshDerived();return}
+  m.dataset.k=evId+cur.docId+cur.key;m.innerHTML=formHTML();bindForm()}
+
+/* ---------- login ---------- */
+function evCard(id,c,extra=""){return`<article class="evc ${c.visible?"":"draft"}"><div class="chips">${stateChip(c)}</div>
+   <h3>${esc(c.title||"Kejohanan tanpa nama")}</h3>
+   <div class="em"><span><b>${esc(fmtRange(c,"short"))}</b> · ${esc(c.venue||"Tempat belum ditetapkan")}</span><span>Tarikh tutup: <b>${esc(c.mode==="open"?"Tiada had":fmtDeadline(c))}</b></span>${regState(c)==="late"?`<span style="color:var(--bad)">Pendaftaran lewat: denda ${esc(fineText(c))}</span>`:""}</div>${extra}</article>`}
+function loginHTML(){if(!eventsLoaded)return`<div class="notice info">Memuatkan…</div>`;
+  const pub=[...events.entries()].filter(([,c])=>c.visible);
+  const opts=pub.map(([id,c])=>`<option value="${esc(id)}" ${loginEvent===id?"selected":""}>${esc(c.title)}</option>`).join("")+(loginEvent&&!events.has(loginEvent)?`<option value="${esc(loginEvent)}" selected>Kejohanan dari pautan (${esc(loginEvent)})</option>`:"");
+  const tab=(k,l)=>`<button type="button" data-lt="${k}" aria-pressed="${loginTab===k}">${l}</button>`;
+  return`<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:18px;align-items:start">
+   <section class="sec"><div class="sec-h"><h2>Log Masuk</h2></div>
+    <form class="sec-b" id="loginform" style="display:flex;flex-direction:column;gap:14px" novalidate>
+     <div class="seg" role="group" aria-label="Jenis pengguna" style="align-self:flex-start;flex-wrap:wrap;border-radius:14px">${tab("team","Pengurus Pasukan")}${tab("admin","Urus Setia")}${tab("super","Super Admin")}</div>
+     ${loginTab!=="super"?`<label class="f">Kejohanan<select class="i" id="l-ev" required>${opts||`<option value="">Tiada kejohanan dibuka</option>`}</select></label>`:""}
+     ${loginTab==="team"?`<label class="f">Kod pasukan<input class="i mono" id="l-code" autocomplete="username" placeholder="cth. SBH" maxlength="10" style="text-transform:uppercase" required></label>`:""}
+     <label class="f">PIN${loginTab==="admin"?" urus setia":loginTab==="super"?" super admin":""}<input class="i mono" id="l-pin" type="password" autocomplete="current-password" inputmode="text" maxlength="12" required></label>
+     <div id="l-err"></div>
+     <button class="btn go" type="submit" id="l-go" style="align-self:flex-start">Log masuk</button>
+     <p class="hint" style="margin:0">${loginTab==="team"?"Kod pasukan dan PIN diberikan oleh urus setia kejohanan.":loginTab==="admin"?"PIN urus setia diberikan oleh super admin bagi setiap kejohanan.":"Untuk mencipta kejohanan dan menetapkan PIN urus setia."}</p>
+    </form></section>
+   <section style="display:flex;flex-direction:column;gap:12px"><h2 style="font-family:var(--f-display);font-size:24px;margin:0;text-transform:uppercase">Kejohanan Dibuka</h2>
+    ${pub.length?`<div class="evgrid" style="grid-template-columns:1fr">${pub.map(([id,c])=>evCard(id,c,`<div class="actions"><button class="btn go" type="button" data-pick="${esc(id)}">Log masuk pasukan</button></div>`)).join("")}</div>`:`<div class="sec empty"><b>Belum ada kejohanan dibuka</b>Urus setia akan berkongsi pautan apabila pendaftaran dibuka.</div>`}
+   </section></div>`}
+function bindLogin(){document.querySelectorAll("[data-lt]").forEach(b=>b.onclick=()=>{loginTab=b.dataset.lt;render();$("#l-pin")?.focus()});
+  document.querySelectorAll("[data-pick]").forEach(b=>b.onclick=()=>{loginEvent=b.dataset.pick;loginTab="team";render();$("#l-code")?.focus()});
+  $("#l-ev")?.addEventListener("change",e=>loginEvent=e.target.value);
+  $("#loginform").addEventListener("submit",async e=>{e.preventDefault();const ev=$("#l-ev")?.value||"",code=$("#l-code")?.value||"",pin=$("#l-pin").value;
+    if(loginTab!=="super"&&!ev){$("#l-err").innerHTML=`<ul class="checks"><li class="bad">Pilih kejohanan dahulu.</li></ul>`;return}
+    if(loginTab==="team"&&!code.trim()){$("#l-err").innerHTML=`<ul class="checks"><li class="bad">Masukkan kod pasukan.</li></ul>`;return}
+    const b=$("#l-go");b.disabled=true;b.textContent="Menyemak…";
+    try{await doLogin(loginTab,ev,code,pin)}catch(err){$("#l-err").innerHTML=`<ul class="checks"><li class="bad">${esc(err.message)}</li></ul>`;b.disabled=false;b.textContent="Log masuk"}})}
+
+/* ---------- super admin: all tournaments ---------- */
+function superHTML(){const cards=superEvents.map(e=>{const c=sanitizeCfg(e.cfg);return evCard(e.id,c,`<div class="em"><span>${e.teams} pasukan · ${e.submitted} dihantar${e.has_admin_pin?"":" · <b style='color:var(--bad)'>PIN urus setia belum ditetapkan</b>"}</span></div>
+    <div class="actions"><button class="btn" type="button" data-sev="${esc(e.id)}" data-v="dash">Papan pemuka</button><button class="btn" type="button" data-sev="${esc(e.id)}" data-v="acc">Akses pasukan</button><button class="btn ${c.visible?"":"go"}" type="button" data-sev="${esc(e.id)}" data-v="set">${c.visible?"Tetapan & kongsi":"Siapkan & kongsi"}</button></div>`)}).join("");
+  return`<section style="display:flex;flex-direction:column;gap:12px"><div class="sec-h" style="padding:0;border:0"><h2 style="font-family:var(--f-display);font-size:26px;margin:0;text-transform:uppercase">Semua Kejohanan</h2><p>Kejohanan berstatus Draf hanya dilihat oleh urus setia sehingga diterbitkan.</p></div>
+   <div class="evgrid">${cards}<button class="evnew" type="button" id="evnew">+ Kejohanan baharu</button></div></section>
+   <section class="sec"><div class="sec-h"><h2>Tukar PIN Super Admin</h2><p>Sekurang-kurangnya 6 aksara.</p></div>
+    <form class="sec-b copyrow" id="spinform" novalidate><input class="i mono" id="sp-new" type="password" maxlength="12" placeholder="PIN baharu" autocomplete="new-password" aria-label="PIN super admin baharu"><button class="btn" type="submit">Tukar PIN</button></form></section>`}
+function bindSuper(){document.querySelectorAll("[data-sev]").forEach(b=>b.onclick=async()=>{await superOpen(b.dataset.sev,b.dataset.v);if(b.dataset.v==="acc")setTab("acc")});
+  $("#evnew")?.addEventListener("click",()=>{evId="new";isNewEvent=true;const y=new Date().getFullYear();
+    cfg=sanitizeCfg({title:"",mode:"auto",after:"fine",fineAmount:0,fineNote:"",eligYear:y-15,visible:false});draft=null;applyCfg();view="set";renderTabs();render();window.scrollTo(0,0)});
+  $("#spinform")?.addEventListener("submit",async e=>{e.preventDefault();const p=$("#sp-new").value.trim();try{await rpc("kj_super_pin_change",{p_old:sess.pin,p_new:p});sess.pin=p;saveSess();$("#sp-new").value="";toast("PIN super admin ditukar")}catch(err){toast(err.message)}})}
+
+function teamStatusChip(t){if(!t)return`<span class="chip mute">Belum mula</span>`;if(t.status==="submitted")return`<span class="chip ok"><i class="dot"></i>Dihantar</span>`;return`<span class="chip draft"><i class="dot"></i>Draf</span>`}
+
+function formHTML(){const t=draft,ro=!canEditDraft(),dis=ro?"disabled":"";const other=cur.docId!==uid;
+  const d=docFor(cur.docId)||{teams:{}};
+  const segBtns=["L","P"].map(k=>`<button type="button" data-sex="${k}" aria-pressed="${cur.key===k}">${SEX[k].ms} ${teamStatusChip(teamOf(d,k)).replace(/<span/,'<span style="font-size:11px"')}</button>`).join("");
+  const players=t.players.map((p,i)=>playerRow(p,i,dis)).join("");
+  const iss=formIssues();
+  return `<div id="formroot" style="display:flex;flex-direction:column;gap:18px">
+  ${other?`<div class="notice info"><div><button class="back" id="backdash">← Kembali ke Papan Pemuka</button> · Anda sedang menyunting borang pasukan lain sebagai Urus Setia.</div></div>`:""}
+  ${t.status!=="submitted"?(isClosed()
+     ?`<div class="notice warn"><div><strong>Pendaftaran telah ditutup.</strong> ${cfg.mode==="closed"?"Urus setia telah menutup pendaftaran.":"Tarikh tutup ialah "+esc(fmtDeadline(cfg,"long"))+"."} ${isAdmin?"Sebagai Urus Setia anda masih boleh menyunting borang ini.":"Borang ini tidak boleh diubah atau dihantar lagi. Hubungi urus setia jika perlu."}</div></div>`
+     :isLate()?`<div class="notice bad"><div><strong>Peringatan: tarikh tutup telah lepas (${esc(fmtDeadline(cfg,"long"))}).</strong> Borang yang dihantar sekarang dikira <b>LEWAT</b> dan pasukan anda perlu membayar denda <span class="fine">${esc(fineText())}</span>. ${esc(cfg.fineNote)}</div></div>`
+     :`<div class="notice ${regState()==="soon"?"warn":"info"}"><div><strong>Pendaftaran ${esc(regStatusText())}.</strong> Pastikan borang dihantar sebelum tarikh tutup.${cfg.after==="fine"&&deadlineDate()&&cfg.mode==="auto"?` Borang yang dihantar selepas tarikh tutup dikenakan denda ${esc(fineText())}.`:""}</div></div>`):""}
+  ${t.status==="submitted"&&teamLate(t)?`<div class="notice ${t.finePaid?"ok":"bad"}"><div><strong>Pendaftaran lewat.</strong> Borang dihantar selepas tarikh tutup (${esc(fmtDeadline(cfg,"long"))}). Denda ${esc(fineText())}: <b>${t.finePaid?"telah dibayar":"BELUM DIBAYAR"}</b>. ${t.finePaid?"":esc(cfg.fineNote)}</div></div>`:""}
+  ${t.status==="submitted"?`<div class="notice ok"><div><strong>Borang telah dihantar</strong> pada ${new Date(t.submittedAt).toLocaleString("ms-MY")}. ${isAdmin?"Sebagai Urus Setia anda masih boleh menyunting atau membuka semula borang ini.":"Untuk sebarang pindaan, hubungi Urus Setia supaya borang dibuka semula."}</div></div>`:""}
+  <div class="teamswitch"><div class="seg" role="group" aria-label="Kategori">${segBtns}</div><span class="savestate" id="savestate">${lastSaved?"Disimpan "+lastSaved.toLocaleTimeString("ms-MY",{hour:"2-digit",minute:"2-digit"}):(t.updatedAt?"Kemas kini terakhir "+new Date(t.updatedAt).toLocaleString("ms-MY"):"Simpan automatik semasa menaip")}</span></div>
+
+  <section class="sec"><div class="sec-h"><h2>Maklumat Pasukan<small>TEAM</small></h2><p>Kategori: <b>${SEX[cur.key].ms} (${SEX[cur.key].en})</b></p></div>
+   <div class="sec-b grid">
+    <label class="f">Pasukan / Negeri<input class="i" id="t-team" list="states" data-p="team" value="${esc(t.team)}" ${dis} placeholder="cth. Sabah"></label>
+    <label class="f">Kod<input class="i mono" id="t-code" data-p="code" value="${esc(t.code)}" ${dis} ${isAdmin?"":"readonly title=\"Kod pasukan mengikut log masuk\""} placeholder="cth. SBH" maxlength="6" style="text-transform:uppercase"></label>
+    <label class="f">Pegawai untuk dihubungi<input class="i" id="t-cname" data-p="contact.name" value="${esc(t.contact.name)}" ${dis}></label>
+    <label class="f">No. telefon<input class="i mono" id="t-ctel" data-p="contact.tel" value="${esc(t.contact.tel)}" ${dis} inputmode="tel" placeholder="01x-xxxxxxx"></label>
+    <label class="f">E-mel<input class="i" id="t-cmail" data-p="contact.email" value="${esc(t.contact.email)}" ${dis} inputmode="email"></label>
+   </div>
+   <datalist id="states">${STATES.map(s=>`<option value="${s[0]}">`).join("")}</datalist>
+  </section>
+
+  <section class="sec"><div class="sec-h"><h2>Senarai Pemain<small>PLAYERS</small></h2><p>Nama penuh mengikut Kad Pengenalan. Tarikh lahir diisi automatik daripada No. KP. Klik kotak Gambar untuk muat naik gambar saiz pasport (dipotong automatik 35×45 mm).</p></div>
+   <div class="tbl-wrap"><table class="pl"><thead>
+    <tr><th rowspan="2">#</th><th rowspan="2" style="text-align:center">Gambar</th><th rowspan="2" style="width:62px">No. Baju</th><th rowspan="2" style="min-width:220px">Nama Penuh (ikut KP)</th><th rowspan="2" style="min-width:150px">Posisi</th><th rowspan="2" title="Kapten pasukan" style="text-align:center">C</th><th rowspan="2" title="Libero" style="text-align:center">L</th><th rowspan="2" style="width:110px">Nama Cina</th><th rowspan="2" style="min-width:160px">No. KP</th><th rowspan="2" style="width:140px">Tarikh Lahir</th><th rowspan="2">Umur ${EVENT_YEAR}</th><th rowspan="2" style="width:70px">Berat (kg)</th><th rowspan="2" style="width:76px">Tinggi (cm)</th><th class="grp" colspan="2">Capaian Tertinggi (cm)</th><th class="grp" colspan="3">Perlawanan Negeri / Kebangsaan</th><th rowspan="2">Semakan</th><th rowspan="2"></th></tr>
+    <tr><th style="width:70px">Spike</th><th style="width:70px">Block</th><th style="width:64px">Antara­bangsa</th><th style="width:64px">Keba­ngsaan</th><th style="width:60px">Lain</th></tr>
+   </thead><tbody id="ptbody">${players}</tbody></table></div>
+   <div class="tbl-foot"><span id="pcount">${t.players.filter(filled).length} pemain diisi · maksimum ${MAX_PLAYERS}</span>
+    <button class="btn sm" id="addp" type="button" ${dis||(t.players.length>=MAX_PLAYERS?"disabled":"")}>+ Tambah baris pemain</button></div>
+  </section>
+
+  <section class="sec"><div class="sec-h"><h2>Pegawai Pasukan<small>TEAM OFFICIALS</small></h2><p>Nama penuh mengikut Kad Pengenalan.</p></div>
+   <div class="sec-b off"><span class="hd">Gambar</span><span class="hd">Jawatan</span><span class="hd">Nama Penuh</span><span class="hd">No. Telefon</span>
+   ${OFFICIALS.map((o,i)=>`<span class="ph"><span class="phc" data-slot="${slotO(cur.key,o[0])}" data-label="${o[1]}">${photoInner(slotO(cur.key,o[0]),dis,o[1])}</span></span><span class="role"><span>${i+1}</span>${o[1]}</span>
+     <label class="f" style="text-transform:none"><span class="sr" hidden>Nama ${o[1]}</span><input class="i" id="o-${o[0]}-name" aria-label="Nama ${o[1]}" data-p="officials.${o[0]}.name" value="${esc(t.officials[o[0]].name)}" ${dis}></label>
+     <input class="i mono" id="o-${o[0]}-tel" aria-label="Telefon ${o[1]}" data-p="officials.${o[0]}.tel" value="${esc(t.officials[o[0]].tel)}" ${dis} inputmode="tel">`).join("")}
+   </div></section>
+
+  <section class="sec"><div class="sec-h"><h2>Warna 2 Uniform<small>COLOUR OF 2 UNIFORMS</small></h2></div>
+   <div class="sec-b kit"><span></span><span class="hd">No. 1</span><span class="hd">No. 2</span>
+    <span class="lbl">Baju</span><input class="i" id="k-s1" aria-label="Baju No. 1" data-p="kit.shirt1" value="${esc(t.kit.shirt1)}" ${dis} placeholder="cth. Biru"><input class="i" id="k-s2" aria-label="Baju No. 2" data-p="kit.shirt2" value="${esc(t.kit.shirt2)}" ${dis} placeholder="cth. Putih">
+    <span class="lbl">Seluar</span><input class="i" id="k-h1" aria-label="Seluar No. 1" data-p="kit.shorts1" value="${esc(t.kit.shorts1)}" ${dis}><input class="i" id="k-h2" aria-label="Seluar No. 2" data-p="kit.shorts2" value="${esc(t.kit.shorts2)}" ${dis}>
+   </div></section>
+
+  <section class="sec"><div class="sec-h"><h2>Pengakuan & Hantar</h2></div>
+   <div class="sec-b" style="display:flex;flex-direction:column;gap:16px">
+    <label class="decl"><input type="checkbox" id="decl" ${t.declared?"checked":""} ${dis}><span>Kami yang bertandatangan, mengikut peraturan semasa, mengesahkan bahawa pemain yang didaftarkan layak bertanding dalam kejohanan anjuran MAVA. <i style="color:var(--muted)">(We, the undersigned, declare that in accordance with the present regulations, the registered players are qualified for MAVA competitions.)</i></span></label>
+    <div id="issues">${issuesHTML(iss)}</div>
+    <div class="actions">
+     ${t.status==="submitted"
+       ? (isAdmin?`<button class="btn" id="reopen" type="button">Buka semula untuk pindaan</button>${teamLate(t)?`<button class="btn ${t.finePaid?"":"go"}" id="finepaid" type="button">${t.finePaid?"Tanda denda belum dibayar":"Tanda denda telah dibayar"}</button>`:""}`:"")
+       : (ro?"":`<button class="btn go" id="submit" type="button">${isLate()?"Hantar borang (lewat · denda "+esc(fineText())+")":"Hantar borang"}</button><button class="btn" id="savenow" type="button" ${dis}>Simpan draf</button>`)}
+     <button class="btn primary" id="dlform" type="button">Muat turun Borang O-2 (PDF)</button>
+    </div>
+   </div></section>
+  </div>`}
+
+function playerRow(p,i,dis){const iss=playerIssues(p,draft.players);const age=p.dob?EVENT_YEAR-+p.dob.slice(0,4):"";
+  const chip=!filled(p)?`<span class="chip mute">Kosong</span>`:iss.some(x=>x[0]==="bad")?`<span class="chip bad" title="${esc(iss.map(x=>x[1]).join("; "))}">${esc(iss.find(x=>x[0]==="bad")[1])}</span>`:iss.length?`<span class="chip warn" title="${esc(iss.map(x=>x[1]).join("; "))}">${esc(iss[0][1])}</span>`:`<span class="chip ok">Lengkap</span>`;
+  const inp=(k,extra="",l="")=>`<input class="i ${extra}" id="p${i}-${k}" data-i="${i}" data-k="${k}" aria-label="${l} pemain ${i+1}" value="${esc(p[k])}" ${dis}`;
+  return `<tr class="${filled(p)?"":"blank"}" id="row${i}">
+   <td class="n" data-n="${i+1}">Pemain ${i+1}</td>
+   <td class="ph" data-l="Gambar pasport"><div class="phc" data-slot="${slotP(cur.key,i)}" data-label="pemain ${i+1}">${photoInner(slotP(cur.key,i),dis,"pemain "+(i+1))}</div></td>
+   <td data-l="No. Baju">${inp("shirt","mono","No. baju")} inputmode="numeric" maxlength="2"></td>
+   <td data-l="Nama penuh (ikut KP)" class="wide">${inp("name","","Nama")} style="text-transform:uppercase"></td>
+   <td data-l="Posisi"><select class="i" id="p${i}-position" data-i="${i}" data-k="position" aria-label="Posisi pemain ${i+1}" ${dis}><option value="">Pilih…</option>${POS.map(o=>`<option value="${o[0]}" ${p.position===o[0]?"selected":""}>${o[1]}</option>`).join("")}</select></td>
+   <td data-l="Kapten (C)" class="tick"><label class="tk cap"><input type="radio" name="cap-${cur.key}" id="p${i}-cap" data-cap="${i}" ${draft.captain===i?"checked":""} ${dis} aria-label="Kapten: pemain ${i+1}"><span>C</span></label></td>
+   <td data-l="Libero (L)" class="tick"><label class="tk lib"><input type="checkbox" id="p${i}-lib" data-lib="${i}" ${p.position==="L"?"checked":""} ${dis} aria-label="Libero: pemain ${i+1}"><span>L</span></label></td>
+   <td data-l="Nama Cina">${inp("chinese","","Nama Cina")}></td>
+   <td data-l="No. KP">${inp("ic","mono","No KP")} inputmode="numeric" placeholder="YYMMDD-PB-####"></td>
+   <td data-l="Tarikh lahir"><input class="i mono" type="date" id="p${i}-dob" data-i="${i}" data-k="dob" aria-label="Tarikh lahir pemain ${i+1}" value="${esc(p.dob)}" ${dis}></td>
+   <td data-l="Umur ${EVENT_YEAR}" class="age" id="age${i}">${age}</td>
+   <td data-l="Berat (kg)">${inp("weight","mono","Berat")} inputmode="decimal"></td>
+   <td data-l="Tinggi (cm)">${inp("height","mono","Tinggi")} inputmode="decimal"></td>
+   <td data-l="Spike (cm)">${inp("spike","mono","Spike")} inputmode="numeric"></td>
+   <td data-l="Block (cm)">${inp("block","mono","Block")} inputmode="numeric"></td>
+   <td data-l="Antarabangsa">${inp("intl","mono","Perlawanan antarabangsa")} inputmode="numeric"></td>
+   <td data-l="Kebangsaan">${inp("natl","mono","Perlawanan kebangsaan")} inputmode="numeric"></td>
+   <td data-l="Lain-lain">${inp("other","mono","Perlawanan lain")} inputmode="numeric"></td>
+   <td data-l="Semakan" class="wide" id="chk${i}">${chip}</td>
+   <td class="rm">${dis?"":`<button class="iconbtn" type="button" data-rm="${i}" aria-label="Kosongkan pemain ${i+1}" title="Kosongkan baris">✕</button>`}</td>
+  </tr>`}
+function issuesHTML(iss){if(!iss.length)return`<div class="notice ok"><div><strong>Semua semakan lulus.</strong> Borang sedia untuk dihantar.</div></div>`;
+  const shown=iss.slice(0,8);return`<div style="font-weight:700;margin-bottom:6px">Perlu diperbetulkan sebelum hantar (${iss.filter(x=>x[0]==="bad").length} wajib, ${iss.filter(x=>x[0]==="warn").length} amaran)</div><ul class="checks">${shown.map(([lv,m])=>`<li class="${lv}">${esc(m)}</li>`).join("")}${iss.length>8?`<li>…dan ${iss.length-8} lagi</li>`:""}</ul>`}
+
+function refreshDerived(){if(!draft)return;draft.players.forEach((p,i)=>{const a=$("#age"+i);if(a)a.textContent=p.dob?EVENT_YEAR-+p.dob.slice(0,4):"";const c=$("#chk"+i);if(c){const tmp=document.createElement("tbody");tmp.innerHTML=playerRow(p,i,"");c.innerHTML=tmp.querySelector("#chk"+i).innerHTML}const r=$("#row"+i);if(r)r.classList.toggle("blank",!filled(p))});
+  const pc=$("#pcount");if(pc)pc.textContent=`${draft.players.filter(filled).length} pemain diisi · maksimum ${MAX_PLAYERS}`;const is=$("#issues");if(is)is.innerHTML=issuesHTML(formIssues())}
+
+function setPath(o,path,v){const ks=path.split(".");let x=o;for(let i=0;i<ks.length-1;i++)x=x[ks[i]];x[ks.at(-1)]=v}
+function bindForm(){const root=$("#formroot");
+  root.querySelectorAll("[data-sex]").forEach(b=>b.onclick=async()=>{if(dirty)await save();cur.key=b.dataset.sex;dirty=false;lastSaved=null;armSubmit=false;draft=null;syncDraft();render()});
+  $("#backdash")?.addEventListener("click",async()=>{if(dirty)await save();setTab("dash")});
+  $("#finepaid")?.addEventListener("click",async()=>{const v=!draft.finePaid;try{await rpc("kj_fine_set",{...A(),p_team:cur.docId,p_sex:cur.key,p_paid:v});draft.finePaid=v;const d=docFor(cur.docId);if(d?.teams?.[cur.key])d.teams[cur.key].finePaid=v;toast(v?"Denda ditanda dibayar":"Denda ditanda belum dibayar");rerender()}catch(e){showErr(e)}});
+  root.addEventListener("input",e=>{const el=e.target;if(!canEditDraft())return;
+    if(el.dataset.p){let v=el.value;if(el.dataset.p==="code")v=v.toUpperCase();setPath(draft,el.dataset.p,v);
+      if(el.dataset.p==="team"){const s=STATES.find(s=>s[0].toLowerCase()===v.trim().toLowerCase());if(s&&!draft.code){draft.code=s[1];$("#t-code").value=s[1]}}}
+    else if(el.dataset.k){const i=+el.dataset.i,k=el.dataset.k,p=draft.players[i];
+      if(k==="ic"){const f=fmtIC(el.value);if(f!==el.value)el.value=f;p.ic=f;const dob=icToDob(f);if(f.replace(/\D/g,"").length>=6&&dob){p.dob=dob;$("#p"+i+"-dob").value=dob}}
+      else if(k==="name")p.name=el.value.toUpperCase();
+      else if(k==="position"){p.position=el.value;const lb=$("#p"+i+"-lib");if(lb)lb.checked=el.value==="L"}
+      else p[k]=el.value}
+    else if(el.dataset.cap!==undefined){draft.captain=+el.dataset.cap}
+    else if(el.dataset.lib!==undefined){const i=+el.dataset.lib,p=draft.players[i];p.position=el.checked?"L":(p.position==="L"?"":p.position);$("#p"+i+"-position").value=p.position}
+    else return;
+    markDirty();refreshDerived()});
+  root.addEventListener("change",e=>{const el=e.target;if(!el.dataset.up)return;const f=el.files?.[0];el.value="";if(!f||!canEditDraft())return;uploadPhoto(el.dataset.up,f,el.closest(".phw"))});
+  root.addEventListener("click",e=>{const b=e.target.closest("[data-phx]");if(!b||!canEditDraft())return;if(b.dataset.arm!=="1"){b.dataset.arm="1";b.textContent="?";b.title="Klik sekali lagi untuk buang";toast("Klik × sekali lagi untuk membuang gambar");setTimeout(()=>{if(b.isConnected){b.dataset.arm="";b.textContent="×"}},3000);return}removePhoto(b.dataset.phx)});
+  $("#decl")?.addEventListener("change",e=>{draft.declared=e.target.checked;markDirty();refreshDerived()});
+  $("#addp")?.addEventListener("click",()=>{if(draft.players.length>=MAX_PLAYERS)return;const n=Math.min(MAX_PLAYERS,draft.players.length+2);while(draft.players.length<n)draft.players.push(blankPlayer());markDirty();rerender()});
+  root.querySelectorAll("[data-rm]").forEach(b=>b.onclick=()=>{draft.players[+b.dataset.rm]=blankPlayer();if((photos[cur.docId]||{})[slotP(cur.key,+b.dataset.rm)])removePhoto(slotP(cur.key,+b.dataset.rm));if(draft.captain===+b.dataset.rm)draft.captain=null;markDirty();rerender()});
+  $("#savenow")?.addEventListener("click",async()=>{if(await save())toast("Draf disimpan")});
+  $("#submit")?.addEventListener("click",async e=>{const iss=formIssues();
+    if(iss.some(x=>x[0]==="bad")){toast("Masih ada perkara wajib yang belum lengkap");$("#issues").scrollIntoView({behavior:"smooth",block:"center"});return}
+    if(!armSubmit){armSubmit=true;e.target.textContent=isLate()?"Sahkan: hantar lewat & bayar denda":"Sahkan: hantar sekarang";toast(isLate()?"Penghantaran lewat dikenakan denda "+fineText()+". Tekan sekali lagi untuk menghantar.":"Tekan sekali lagi untuk menghantar");return}
+    const ok=await save({status:"submitted",submittedAt:new Date().toISOString()});if(ok){toast("Borang dihantar");rerender()}});
+  $("#reopen")?.addEventListener("click",async()=>{if(await save({status:"draft",submittedAt:null})){toast("Borang dibuka semula");rerender()}});
+  $("#dlform")?.addEventListener("click",e=>withBusy(e.currentTarget,async()=>{if(dirty)await save();await offer(fileName(draft),await makePdf(teamPages(draft,photos[cur.docId]||{})))}));
+}
+function rerender(){const m=$("#main");m.innerHTML=formHTML();bindForm()}
+
+/* ---------- settings & sharing (admin) ---------- */
+const siteUrl=()=>location.origin+location.pathname;
+function shareLink(){return`${siteUrl()}#e-${evId}`}
+function shareMsg(c=cfg){return`*${c.title||"Kejohanan"}*
+Tarikh: ${fmtRange(c)}
+Tempat: ${c.venue}
+Tarikh tutup pendaftaran: ${c.mode==="open"?"tiada had":fmtDeadline(c,"long")+" (MYT)"}${c.after==="fine"&&c.mode==="auto"?`
+Pendaftaran selepas tarikh tutup dikenakan denda ${fineText(c)}.`:""}
+
+Daftar pasukan anda di:
+${shareLink()}
+Log masuk dengan kod pasukan dan PIN yang diberikan oleh urus setia.`}
+function setHTML(){const c=cfg;const [dd,dt]=(c.deadline||"T").split("T");const sup=sess.role==="super";const se=superEvents.find(x=>x.id===evId);const nTeams=sup?(se?.teams||0):allDocs.size;
+  return `<section class="sec"><div class="sec-h"><h2>${isNewEvent?"Kejohanan Baharu":"Tetapan Kejohanan"}</h2><p>Maklumat ini dipaparkan pada borang, jam, papan pemuka dan semua PDF.</p></div>
+   <form class="sec-b" id="setform" style="display:flex;flex-direction:column;gap:18px" novalidate>
+    <div class="setgrid">
+     <label class="f span2">Nama kejohanan<input class="i" id="s-title" value="${esc(c.title)}" maxlength="160" placeholder="cth. Kejohanan Bola Tampar Remaja B16 Malaysia 2027" required></label>
+     <label class="f">Tarikh mula<input class="i mono" type="date" id="s-start" value="${esc(c.start)}" required></label>
+     <label class="f">Tarikh tamat<input class="i mono" type="date" id="s-end" value="${esc(c.end)}" required></label>
+     <label class="f span2">Tempat<input class="i" id="s-venue" value="${esc(c.venue)}" maxlength="120" placeholder="cth. Dewan Sukan, Kota Kinabalu, Sabah" required></label>
+     <label class="f">Tarikh tutup borang<input class="i mono" type="date" id="s-dd" value="${esc(dd)}" required></label>
+     <label class="f">Masa tutup (MYT)<input class="i mono" type="time" id="s-dt" value="${esc(dt||"23:59")}" required></label>
+     <label class="f">Kelayakan: lahir pada / selepas tahun<input class="i mono" type="number" id="s-elig" value="${c.eligYear}" min="1990" max="2035"><span class="hint">Pemain yang lahir lebih awal diberi amaran semakan.</span></label>
+     ${isNewEvent?`<label class="f">PIN urus setia kejohanan<input class="i mono" id="s-apin" maxlength="12" value="${Math.floor(100000+Math.random()*900000)}" required><span class="hint">Berikan kepada admin kejohanan ini. 4 hingga 12 aksara.</span></label>`:""}
+    </div>
+    <div class="f" role="radiogroup" aria-label="Status pendaftaran" style="display:flex;flex-direction:column;gap:6px"><span style="font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em">Status pendaftaran</span>
+     <div class="modes">
+      <label><input type="radio" name="s-mode" value="auto" ${c.mode==="auto"?"checked":""}><span><b>Ikut tarikh tutup</b><small>Dibuka sehingga tarikh dan masa tutup.</small></span></label>
+      <label><input type="radio" name="s-mode" value="open" ${c.mode==="open"?"checked":""}><span><b>Dibuka</b><small>Abaikan tarikh tutup. Tiada denda lewat.</small></span></label>
+      <label><input type="radio" name="s-mode" value="closed" ${c.mode==="closed"?"checked":""}><span><b>Ditutup</b><small>Pengurus tidak boleh mengubah atau menghantar borang.</small></span></label>
+     </div></div>
+    <div class="f" role="radiogroup" aria-label="Selepas tarikh tutup" style="display:flex;flex-direction:column;gap:6px"><span style="font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em">Selepas tarikh tutup</span>
+     <div class="modes">
+      <label><input type="radio" name="s-after" value="fine" ${c.after==="fine"?"checked":""}><span><b>Terima pendaftaran lewat dengan denda</b><small>Pengurus masih boleh menghantar, dan peringatan denda dipaparkan.</small></span></label>
+      <label><input type="radio" name="s-after" value="lock" ${c.after==="lock"?"checked":""}><span><b>Tutup pendaftaran</b><small>Borang dikunci sebaik sahaja tarikh tutup tiba.</small></span></label>
+     </div></div>
+    <div class="setgrid" id="s-finebox">
+     <label class="f">Amaun denda lewat (RM)<input class="i mono" type="number" id="s-fine" value="${c.fineAmount||""}" min="0" max="100000" step="0.01" placeholder="cth. 200"></label>
+     <label class="f span2">Arahan bayaran denda<input class="i" id="s-finenote" value="${esc(c.fineNote)}" maxlength="400" placeholder="cth. Bayar kepada Bendahari, Maybank 5123 4567 8901, sebelum mesyuarat pengurus."><span class="hint">Dipaparkan kepada pengurus pasukan bersama peringatan denda.</span></label>
+    </div>
+    <div class="preview" id="s-prev"></div>
+    <div id="s-err"></div>
+    <div class="actions"><button class="btn go" type="submit" id="s-save">${isNewEvent?"Cipta kejohanan (draf)":"Simpan tetapan"}</button><button class="btn" type="button" id="s-reset">${isNewEvent?"Batal":"Batal perubahan"}</button><span class="savestate" id="s-state"></span></div>
+   </form></section>
+   ${isNewEvent?"":`<section class="sec"><div class="sec-h"><h2>Kongsi kepada Pengurus Pasukan</h2><p>${c.visible?stateChip(c):"Kejohanan ini masih draf. Pengurus pasukan belum boleh log masuk."}</p></div>
+    <div class="sec-b share">
+     <ol>
+      <li><b>Terbitkan kejohanan</b> supaya pengurus pasukan boleh log masuk. ${c.visible?`<span class="chip ok">Sudah diterbitkan</span> <button class="btn sm" type="button" id="unpub">Tarik balik ke draf</button>`:`<button class="btn sm go" type="button" id="pub">Terbitkan sekarang</button>`}</li>
+      <li><b>Jana kod & PIN pasukan</b> di tab <button class="back" type="button" id="goacc">Akses Pasukan</button>.</li>
+      <li><b>Hantar pautan</b> di bawah, bersama kod dan PIN setiap pasukan, melalui WhatsApp atau e-mel.</li>
+     </ol>
+     <div class="copyrow"><input class="i mono" id="sh-link" readonly value="${esc(shareLink())}" aria-label="Pautan kejohanan"><button class="btn" type="button" id="cp-link">Salin pautan</button></div>
+     <label class="f" for="sh-msg">Mesej sedia untuk dihantar</label>
+     <textarea id="sh-msg" readonly>${esc(shareMsg())}</textarea>
+     <div class="actions"><button class="btn primary" type="button" id="cp-msg">Salin mesej</button></div>
+    </div></section>
+   <section class="sec"><div class="sec-h"><h2>PIN Urus Setia Kejohanan</h2><p>${sup?`Pautan log masuk urus setia: <span class="mono">${esc(siteUrl())}#a-${esc(evId)}</span>`:"Tukar PIN log masuk urus setia untuk kejohanan ini."}</p></div>
+    <form class="sec-b copyrow" id="apinform" novalidate><input class="i mono" id="ap-new" maxlength="12" placeholder="PIN baharu (4 hingga 12 aksara)" aria-label="PIN urus setia baharu"><button class="btn" type="submit">${sup?"Tetapkan PIN":"Tukar PIN"}</button></form></section>
+   ${sup?`<section class="sec"><div class="sec-h"><h2>Padam Kejohanan</h2><p>${nTeams?`${nTeams} borang pasukan sudah wujud. Kejohanan yang ada pendaftaran tidak boleh dipadam; tukar status kepada Ditutup.`:"Tiada borang pasukan lagi."}</p></div>
+    <div class="sec-b"><button class="btn danger" type="button" id="evdel" ${nTeams?"disabled":""}>Padam kejohanan ini</button></div></section>`:""}`}`}
+function readSet(){return{title:$("#s-title").value.trim(),start:$("#s-start").value,end:$("#s-end").value,venue:$("#s-venue").value.trim(),deadline:`${$("#s-dd").value}T${($("#s-dt").value||"23:59").slice(0,5)}`,mode:(document.querySelector('input[name="s-mode"]:checked')||{}).value||"auto",after:(document.querySelector('input[name="s-after"]:checked')||{}).value||"fine",fineAmount:+$("#s-fine").value||0,fineNote:$("#s-finenote").value.trim(),eligYear:+$("#s-elig").value||cfg.eligYear}}
+function setErrors(c){const e=[];if(!c.title)e.push("Nama kejohanan diperlukan");if(!c.venue)e.push("Tempat diperlukan");if(!isDate(c.start)||!isDate(c.end))e.push("Tarikh mula dan tamat diperlukan");else if(c.end<c.start)e.push("Tarikh tamat mesti sama atau selepas tarikh mula");
+  if(!isDT(c.deadline))e.push("Tarikh dan masa tutup diperlukan");if(!(c.eligYear>=1990&&c.eligYear<=2035))e.push("Tahun kelayakan tidak sah");if(c.fineAmount<0)e.push("Amaun denda tidak sah");
+  if(isNewEvent&&!/^[0-9A-Za-z]{4,12}$/.test(($("#s-apin")?.value||"").trim()))e.push("PIN urus setia mesti 4 hingga 12 huruf atau nombor");return e}
+function updatePrev(){const c=readSet();const e=setErrors(c);$("#s-finebox").style.opacity=c.after==="fine"&&c.mode==="auto"?"1":".5";
+  $("#s-err").innerHTML=e.length?`<ul class="checks">${e.map(x=>`<li class="bad">${esc(x)}</li>`).join("")}</ul>`:(isDate(c.start)&&c.deadline.slice(0,10)>c.start?`<ul class="checks"><li>Tarikh tutup selepas tarikh mula kejohanan. Pastikan ini disengajakan.</li></ul>`:"");
+  if(e.length){$("#s-prev").innerHTML="<span style='color:var(--muted)'>Pratonton dipaparkan apabila semua maklumat sah.</span>";return}
+  $("#s-prev").innerHTML=`<span class="eyebrow" style="color:var(--muted)">Pratonton</span><span class="pt">${esc(c.title)}</span><span><b>${esc(fmtRange(c))}</b> · ${esc(c.venue)}</span><span>Tarikh tutup borang: <b>${esc(c.mode==="open"?"Tiada had (dibuka)":c.mode==="closed"?"Ditutup sekarang":fmtDeadline(c,"long")+" MYT")}</b></span>${c.mode==="auto"?`<span>Selepas tarikh tutup: <b>${c.after==="fine"?"terima lewat, denda "+esc(fineText(c)):"pendaftaran ditutup"}</b></span>`:""}`}
+async function copyText(txt,inputEl){try{await navigator.clipboard.writeText(txt);toast("Disalin")}catch(e){if(inputEl){inputEl.focus();inputEl.select()}toast("Tekan Ctrl+C / Salin untuk menyalin teks yang dipilih")}}
+const cfgOut=c=>({title:c.title,start:c.start,end:c.end,venue:c.venue,deadline:c.deadline,mode:c.mode,after:c.after,fineAmount:c.fineAmount,fineNote:c.fineNote,eligYear:c.eligYear,visible:!!c.visible});
+async function writeEvent(data){const full=cfgOut({...cfg,...data});await rpc("kj_event_update",{...A(),p_cfg:full});cfg=sanitizeCfg(full);events.set(evId,cfg);const se=superEvents.find(x=>x.id===evId);if(se)se.cfg=full}
+function bindSet(){const f=$("#setform");updatePrev();
+  f.addEventListener("input",()=>{setDirty=true;$("#s-state").textContent="Belum disimpan";updatePrev()});
+  $("#s-reset").onclick=()=>{setDirty=false;if(isNewEvent){isNewEvent=false;evId=null;applyCfg();view="super";renderTabs();render()}else render()};
+  f.addEventListener("submit",async ev=>{ev.preventDefault();const c=readSet();if(setErrors(c).length){toast("Betulkan tetapan yang ditanda dahulu");return}
+    const btn=$("#s-save");btn.disabled=true;
+    try{if(isNewEvent){const apin=$("#s-apin").value.trim();const r=await rpc("kj_event_create",{p_pin:sess.pin,p_cfg:cfgOut({...c,visible:false}),p_admin_pin:apin});
+        await loadSuper();isNewEvent=false;setDirty=false;await superOpen(r.id,"set");toast("Kejohanan dicipta sebagai draf. PIN urus setia: "+apin);return}
+      await writeEvent(c);setDirty=false;applyCfg();$("#s-state").textContent="Disimpan "+new Date().toLocaleTimeString("ms-MY",{hour:"2-digit",minute:"2-digit"});$("#sh-msg")&&($("#sh-msg").value=shareMsg());toast("Tetapan disimpan")}
+    catch(e){toast("Tetapan tidak disimpan: "+e.message)}finally{btn.disabled=false}});
+  const pubSet=async v=>{if(setDirty){toast("Simpan tetapan dahulu");return}if(v&&setErrors(cfg).length){toast("Lengkapkan tetapan sebelum diterbitkan");return}
+    try{await writeEvent({visible:v});applyCfg();render();toast(v?"Kejohanan diterbitkan. Jana kod & PIN pasukan, kemudian kongsi pautan.":"Kejohanan dikembalikan ke draf")}catch(e){toast("Tidak berjaya: "+e.message)}};
+  $("#pub")?.addEventListener("click",()=>pubSet(true));$("#unpub")?.addEventListener("click",()=>pubSet(false));
+  $("#goacc")?.addEventListener("click",()=>setTab("acc"));
+  $("#cp-link")?.addEventListener("click",()=>copyText(shareLink(),$("#sh-link")));
+  $("#cp-msg")?.addEventListener("click",()=>copyText($("#sh-msg").value,$("#sh-msg")));
+  $("#apinform")?.addEventListener("submit",async e=>{e.preventDefault();const p=$("#ap-new").value.trim();
+    try{await rpc("kj_event_admin_pin",{...A(),p_new:p});if(sess.role==="admin"){sess.pin=p;saveSess()}$("#ap-new").value="";toast("PIN urus setia ditetapkan: "+p)}catch(err){toast(err.message)}});
+  $("#evdel")?.addEventListener("click",async e=>{const b=e.currentTarget;if(b.dataset.arm!=="1"){b.dataset.arm="1";b.textContent="Sahkan: padam terus";toast("Tekan sekali lagi untuk memadam kejohanan ini");return}
+    try{await rpc("kj_event_delete",{p_event:evId,p_pin:sess.pin});events.delete(evId);evId=null;applyCfg();await loadSuper();view="super";renderTabs();render();toast("Kejohanan dipadam")}catch(err){toast(err.message)}})}
+
+/* ---------- team access codes & PINs (admin) ---------- */
+const genPin=()=>String(Math.floor(100000+Math.random()*900000));
+function accHTML(){const have=new Set(accList.map(a=>a.code));const missing=STATES.filter(s=>!have.has(s[1]));
+  return`${newPins.length?`<section class="sec" style="border-color:var(--yellow)"><div class="sec-h"><h2>PIN Baharu: Salin Sekarang</h2><p>PIN hanya dipaparkan sekali. Simpan atau hantar kepada pengurus pasukan sekarang.</p></div>
+    <div class="sec-b share"><div class="tbl-wrap"><table class="dash" style="min-width:420px"><thead><tr><th>Pasukan</th><th>Kod</th><th>PIN</th></tr></thead><tbody>${newPins.map(p=>`<tr><td class="tname">${esc(p.label)}</td><td class="mono">${esc(p.code)}</td><td class="mono" style="font-size:16px;font-weight:700">${esc(p.pin)}</td></tr>`).join("")}</tbody></table></div>
+     <textarea id="np-text" readonly>${esc(newPins.map(p=>`${p.label} (${cfg.title})\nPautan: ${shareLink()}\nKod pasukan: ${p.code}\nPIN: ${p.pin}`).join("\n\n"))}</textarea>
+     <div class="actions"><button class="btn primary" type="button" id="np-copy">Salin semua</button><button class="btn" type="button" id="np-clear">Selesai, sembunyikan PIN</button></div></div></section>`:""}
+   <section class="sec"><div class="sec-h"><h2>Akses Pasukan</h2><p>${accList.length} pasukan boleh log masuk. ${cfg.visible?"":"<b>Kejohanan masih draf: pasukan belum boleh log masuk.</b>"}</p></div>
+    <form class="sec-b setgrid" id="accform" novalidate style="align-items:end">
+     <label class="f">Nama pasukan<input class="i" id="ac-label" list="states" maxlength="80" placeholder="cth. Sabah"></label>
+     <label class="f">Kod pasukan<input class="i mono" id="ac-code" maxlength="10" placeholder="cth. SBH" style="text-transform:uppercase"></label>
+     <label class="f">PIN<input class="i mono" id="ac-pin" maxlength="12" value="${genPin()}"></label>
+     <div class="actions"><button class="btn go" type="submit">Tambah pasukan</button>${missing.length?`<button class="btn" type="button" id="ac-all">Tambah ${missing.length} negeri sekaligus</button>`:""}</div>
+     <datalist id="states">${STATES.map(s=>`<option value="${s[0]}">`).join("")}</datalist>
+    </form>
+    ${accList.length?`<div class="tbl-wrap"><table class="dash"><thead><tr><th>Pasukan</th><th>Kod</th><th>Borang</th><th></th></tr></thead><tbody>${accList.map(a=>{const d=allDocs.get(a.code);const st=["L","P"].map(k=>d?.teams?.[k]?`${SEX[k].ms}: ${d.teams[k].status==="submitted"?"Dihantar":"Draf"}`:"").filter(Boolean).join(" · ");
+      return`<tr><td class="tname">${esc(a.label||"")}</td><td class="mono">${esc(a.code)}</td><td style="color:var(--muted);font-size:13px">${esc(st||"Belum mula")}</td><td style="white-space:nowrap"><button class="btn sm" type="button" data-reset="${esc(a.code)}">PIN baharu</button> <button class="btn sm danger" type="button" data-adel="${esc(a.code)}">Buang akses</button></td></tr>`}).join("")}</tbody></table></div>`:`<div class="empty"><b>Belum ada pasukan</b>Tambah pasukan satu demi satu, atau tambah semua negeri sekaligus.</div>`}
+   </section>`}
+async function reloadAcc(){const r=await rpc("kj_access_list",A());accList=r.access||[];render()}
+function bindAcc(){
+  $("#ac-label")?.addEventListener("input",e=>{const s=STATES.find(s=>s[0].toLowerCase()===e.target.value.trim().toLowerCase());if(s&&!$("#ac-code").value)$("#ac-code").value=s[1]});
+  $("#accform")?.addEventListener("submit",async e=>{e.preventDefault();const label=$("#ac-label").value.trim(),code=$("#ac-code").value.trim().toUpperCase(),pin=$("#ac-pin").value.trim();
+    if(!label){toast("Masukkan nama pasukan");return}
+    try{await rpc("kj_access_set",{...A(),p_team:code,p_label:label,p_new_pin:pin});newPins.unshift({label,code,pin});toast("Pasukan ditambah");await reloadAcc()}catch(err){toast(err.message)}});
+  $("#ac-all")?.addEventListener("click",async e=>{const b=e.currentTarget;b.disabled=true;const have=new Set(accList.map(a=>a.code));let n=0;
+    for(const[label,code]of STATES){if(have.has(code))continue;const pin=genPin();b.textContent=`Menambah ${label}…`;try{await rpc("kj_access_set",{...A(),p_team:code,p_label:label,p_new_pin:pin});newPins.push({label,code,pin});n++}catch(err){toast(label+": "+err.message)}}
+    toast(n+" pasukan ditambah");await reloadAcc()});
+  document.querySelectorAll("[data-reset]").forEach(b=>b.onclick=async()=>{const code=b.dataset.reset,a=accList.find(x=>x.code===code);if(b.dataset.arm!=="1"){b.dataset.arm="1";b.textContent="Sahkan PIN baharu";toast("PIN lama tidak lagi berfungsi selepas ini. Tekan sekali lagi.");return}
+    const pin=genPin();try{await rpc("kj_access_set",{...A(),p_team:code,p_label:a?.label||"",p_new_pin:pin});newPins.unshift({label:a?.label||code,code,pin});toast("PIN baharu dijana");render();window.scrollTo(0,0)}catch(err){toast(err.message)}});
+  document.querySelectorAll("[data-adel]").forEach(b=>b.onclick=async()=>{if(b.dataset.arm!=="1"){b.dataset.arm="1";b.textContent="Sahkan buang";toast("Pasukan tidak boleh log masuk lagi. Borang sedia ada kekal. Tekan sekali lagi.");return}
+    try{await rpc("kj_access_delete",{...A(),p_team:b.dataset.adel});toast("Akses dibuang");await reloadAcc()}catch(err){toast(err.message)}});
+  $("#np-copy")?.addEventListener("click",()=>copyText($("#np-text").value,$("#np-text")));
+  $("#np-clear")?.addEventListener("click",()=>{newPins=[];render()})}
+
+/* ---------- dashboard ---------- */
+function allTeams(){const out=[];for(const[id,d]of allDocs){for(const k of["L","P"]){const t=teamOf(d,k);if(t&&(t.team||t.players?.some(filled)))out.push({id,key:k,t:normTeam(t,k)})}}return out.sort((a,b)=>(a.t.team||"~").localeCompare(b.t.team||"~")||a.key.localeCompare(b.key))}
+function dashHTML(){const teams=allTeams();const sub=teams.filter(x=>x.t.status==="submitted");
+  const players=sub.reduce((n,x)=>n+x.t.players.filter(filled).length,0);
+  const L=sub.filter(x=>x.key==="L").length,P=sub.filter(x=>x.key==="P").length;
+  const warnT=teams.filter(x=>teamIssues(x.t).length).length;
+  const late=sub.filter(x=>teamLate(x.t)),unpaid=late.filter(x=>!x.t.finePaid);
+  const q=dashFilter.q.toLowerCase();
+  const rows=teams.filter(x=>(!q||(x.t.team+" "+x.t.code+" "+(names[x.id]||"")).toLowerCase().includes(q))&&(!dashFilter.sex||x.key===dashFilter.sex)&&(!dashFilter.status||x.t.status===dashFilter.status));
+  return `<div class="notice ${isClosed()?"warn":"info"}"><div><strong>Status pendaftaran:</strong> ${esc(regStatusText())}. <button class="back" id="goset">Ubah dalam Tetapan →</button></div></div>
+  <div class="stats">
+   <div class="stat"><div class="k">Borang dihantar</div><div class="v">${sub.length}</div><div class="s">${teams.length-sub.length} masih draf</div><div class="bar"><i style="width:${teams.length?sub.length/teams.length*100:0}%;background:var(--ok)"></i></div></div>
+   <div class="stat"><div class="k">Lelaki · Perempuan</div><div class="v">${L} · ${P}</div><div class="s">pasukan dihantar</div><div class="bar"><i style="width:${sub.length?L/sub.length*100:0}%;background:var(--blue)"></i><i style="width:${sub.length?P/sub.length*100:0}%;background:var(--yellow)"></i></div></div>
+   <div class="stat"><div class="k">Jumlah pemain</div><div class="v">${players}</div><div class="s">daripada borang dihantar</div></div>
+   <div class="stat"><div class="k">Lewat · denda belum bayar</div><div class="v" style="color:${unpaid.length?"var(--bad)":"var(--ink)"}">${late.length} · ${unpaid.length}</div><div class="s">${unpaid.length&&cfg.fineAmount?"Tertunggak "+esc(money(unpaid.length*cfg.fineAmount)):"pasukan hantar selepas tarikh tutup"}</div></div>
+   <div class="stat"><div class="k">Perlu semakan</div><div class="v" style="color:${warnT?"var(--warn)":"var(--ok)"}">${warnT}</div><div class="s">pasukan ada amaran / ralat</div></div>
+  </div>
+  <section class="sec"><div class="sec-h"><h2>Pasukan Berdaftar <button class="btn sm" type="button" id="dash-ref" style="vertical-align:middle;margin-left:8px">Muat semula</button></h2>
+    <div class="actions"><button class="btn sm" id="dl-sum" type="button" ${teams.length?"":"disabled"}>Senarai induk (PDF)</button><button class="btn sm primary" id="dl-zip" type="button" ${sub.length?"":"disabled"}>Semua Borang O-2 dihantar (PDF)</button></div></div>
+   <div class="sec-b filters" style="border-bottom:1px solid var(--line)">
+    <input class="i" id="f-q" placeholder="Cari pasukan, kod atau pengirim" value="${esc(dashFilter.q)}" style="flex:1 1 220px">
+    <select class="i" id="f-sex" aria-label="Kategori"><option value="">Semua kategori</option><option value="L" ${dashFilter.sex==="L"?"selected":""}>Lelaki</option><option value="P" ${dashFilter.sex==="P"?"selected":""}>Perempuan</option></select>
+    <select class="i" id="f-st" aria-label="Status"><option value="">Semua status</option><option value="submitted" ${dashFilter.status==="submitted"?"selected":""}>Dihantar</option><option value="draft" ${dashFilter.status==="draft"?"selected":""}>Draf</option></select>
+   </div>
+   ${teams.length?`<div class="tbl-wrap"><table class="dash"><thead><tr><th>Pasukan</th><th>Kategori</th><th>Pemain</th><th>Pegawai</th><th>Semakan</th><th>Status</th><th>Denda</th><th>Kemas kini</th><th></th></tr></thead><tbody>
+    ${rows.map(x=>{const iss=teamIssues(x.t);const bad=iss.filter(i=>i[0]==="bad").length,w=iss.length-bad;const offs=OFFICIALS.filter(o=>x.t.officials[o[0]].name.trim()).length;
+     return`<tr><td class="tname">${esc(x.t.team||"(tiada nama)")} <span class="mono" style="color:var(--muted)">${esc(x.t.code)}</span><small>${esc(names[x.id]||"")}${x.t.contact.tel?" · "+esc(x.t.contact.tel):""}</small></td>
+     <td>${SEX[x.key].ms}</td><td>${x.t.players.filter(filled).length}</td><td>${offs}/6</td>
+     <td>${bad?`<span class="chip bad">${bad} ralat</span>`:""} ${w?`<span class="chip warn">${w} amaran</span>`:""} ${!iss.length?`<span class="chip ok">Lulus</span>`:""}</td>
+     <td>${teamStatusChip(x.t)}</td><td>${teamLate(x.t)?`<button class="chip ${x.t.finePaid?"ok":"bad"}" style="border:0;cursor:pointer" type="button" data-fine="${esc(x.id)}|${x.key}" title="Klik untuk tukar status bayaran">${x.t.finePaid?"Dibayar":"Belum bayar"}</button>`:`<span style="color:var(--muted)">–</span>`}</td><td style="color:var(--muted);font-size:13px">${x.t.updatedAt?new Date(x.t.updatedAt).toLocaleString("ms-MY",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"}):""}</td>
+     <td style="white-space:nowrap"><button class="btn sm" data-open="${esc(x.id)}|${x.key}" type="button">Buka</button> <button class="btn sm" data-dl="${esc(x.id)}|${x.key}" type="button">PDF</button></td></tr>`}).join("")||`<tr><td colspan="9" class="empty">Tiada pasukan sepadan dengan carian.</td></tr>`}
+   </tbody></table></div>`:`<div class="empty"><b>Belum ada borang</b>${cfg.visible?"Kongsi pautan kejohanan ini kepada pengurus pasukan (lihat Tetapan & Kongsi).":"Kejohanan ini masih draf. Terbitkan dan kongsi dalam Tetapan & Kongsi."} Borang mereka akan muncul di sini sebaik sahaja mula diisi.</div>`}
+  </section>`}
+function bindDash(){$("#goset")?.addEventListener("click",()=>setTab("set"));const re=()=>{const pos=$("#f-q")?.selectionStart;$("#main").innerHTML=dashHTML();bindDash();const q=$("#f-q");if(document._fq){q.focus();try{q.setSelectionRange(pos,pos)}catch(e){}}};
+  $("#f-q").oninput=e=>{dashFilter.q=e.target.value;document._fq=true;re()};$("#f-q").onblur=()=>document._fq=false;
+  $("#f-sex").onchange=e=>{dashFilter.sex=e.target.value;re()};$("#f-st").onchange=e=>{dashFilter.status=e.target.value;re()};
+  $("#dash-ref")?.addEventListener("click",async()=>{try{await loadBoard();render();toast("Dikemas kini")}catch(e){showErr(e)}});
+  document.querySelectorAll("[data-open]").forEach(b=>b.onclick=async()=>{const[id,k]=b.dataset.open.split("|");await loadPhotos(id);cur={docId:id,key:k};dirty=false;lastSaved=null;draft=null;syncDraft();view="edit";renderTabs();render();window.scrollTo(0,0)});
+  document.querySelectorAll("[data-fine]").forEach(b=>b.onclick=async()=>{const[id,k]=b.dataset.fine.split("|");const t=teamOf(allDocs.get(id),k);
+    try{await rpc("kj_fine_set",{...A(),p_team:id,p_sex:k,p_paid:!t?.finePaid});await loadBoard();render();toast(!t?.finePaid?"Denda ditanda dibayar":"Denda ditanda belum dibayar")}catch(e){showErr(e)}});
+  document.querySelectorAll("[data-dl]").forEach(b=>b.onclick=()=>withBusy(b,async()=>{const[id,k]=b.dataset.dl.split("|");const t=normTeam(teamOf(allDocs.get(id),k),k);await offer(fileName(t),await makePdf(teamPages(t,await loadPhotos(id))))}));
+  $("#dl-sum")?.addEventListener("click",e=>withBusy(e.currentTarget,async()=>{await offer(`Senarai_Induk_${slug()}_${new Date().toISOString().slice(0,10)}.pdf`,await makePdf(listPages()))}));
+  $("#dl-zip")?.addEventListener("click",e=>withBusy(e.currentTarget,async()=>{await offer(`Borang_O-2_${slug()}_${new Date().toISOString().slice(0,10)}.pdf`,await (async()=>{const pages=[];for(const x of allTeams().filter(x=>x.t.status==="submitted"))pages.push(...teamPages(x.t,await loadPhotos(x.id)));return makePdf(pages)})())}));
+}
+
+/* ---------- PDF export ---------- */
+const LOGO="data:image/png;base64,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";
+const slug=()=>(cfg.title||"Kejohanan").replace(/[^\w]+/g,"_").replace(/^_|_$/g,"").slice(0,40);
+function fileName(t){return`O-2_${(t.code||t.team||"PASUKAN").replace(/[^\w-]+/g,"_")}_${SEX[t.sex].ms}.pdf`}
+async function offer(name,blob){const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},2000);toast("Dimuat turun: "+name)}
+const fmtDob=d=>d?d.split("-").reverse().join("/"):"";
+const PDF_CSS=`
+.pg{width:1123px;height:794px;overflow:hidden;padding:20px 30px 16px;background:#fff;color:#111;font-family:"Source Sans 3",Arial,sans-serif;font-size:11px;line-height:1.25;display:flex;flex-direction:column;gap:7px;box-sizing:border-box}
+.pg *{box-sizing:border-box}
+.pg .hd{display:grid;grid-template-columns:70px 1fr 330px;gap:14px;align-items:center;border-bottom:2px solid #13305F;padding-bottom:8px}
+.pg .hd img{width:66px;height:auto}
+.pg .ttl{font-family:"Barlow Condensed",Arial Narrow,sans-serif;font-weight:700;font-size:22px;line-height:1.05;text-transform:uppercase;color:#13305F}
+.pg .sub{font-size:12px;font-weight:600;margin-top:3px}
+.pg .tag{display:inline-block;background:#13305F;color:#fff;font-weight:700;font-size:11px;padding:2px 8px;border-radius:3px;margin-bottom:4px;letter-spacing:.06em}
+.pg .box{display:grid;grid-template-columns:52px 1fr;gap:5px 8px;align-items:center;font-weight:700;font-size:11px}
+.pg .val{border:1.3px solid #111;padding:4px 8px;font-size:13px;min-height:24px;font-weight:700}
+.pg .sx{display:flex;gap:14px;align-items:center}
+.pg .sx span{display:inline-flex;align-items:center;gap:6px}
+.pg .cb{width:18px;height:18px;border:1.3px solid #111;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;font-style:normal}
+.pg table{border-collapse:collapse;width:100%}
+.pg th,.pg td{border:1px solid #111;padding:2px 5px;vertical-align:middle}
+.pg th{background:#E8EDF6;font-size:9.5px;text-transform:uppercase;font-weight:700;text-align:center;line-height:1.15}
+.pg td{height:17px;font-size:11px;padding-top:1px;padding-bottom:1px}
+.pg td.c{text-align:center}
+.pg td.nm{font-weight:600}
+.pg .mono{font-family:"JetBrains Mono",Consolas,monospace;font-size:10px}
+.pg .ft{display:grid;grid-template-columns:1.25fr 1fr;gap:16px;align-items:start}
+.pg .rt{display:flex;flex-direction:column;gap:8px}
+.pg .decl{border:1px solid #111;padding:5px 8px;font-size:10px;font-weight:600;text-transform:uppercase}
+.pg .sig{display:grid;grid-template-columns:1fr 1fr 62px;gap:10px;align-items:end}
+.pg .sig div{border-top:1px solid #111;text-align:center;padding-top:3px;font-size:10px;font-weight:600;margin-top:22px}
+.pg .seal{width:62px;height:62px;border:1px dashed #555;border-radius:50%;display:flex;align-items:center;justify-content:center;text-align:center;font-size:9px;color:#555}
+.pg .note{font-size:10px;color:#333;display:flex;justify-content:space-between;gap:8px}
+.pg .muted{color:#555}
+.pg .stamp{font-size:9.5px;color:#555;text-align:right;margin-top:auto}
+.pg .sh{font-family:"Barlow Condensed",Arial Narrow,sans-serif;font-weight:700;font-size:15px;text-transform:uppercase;color:#13305F;border-bottom:1px solid #13305F;padding-bottom:2px;letter-spacing:.03em}
+.pg .pgrid{display:grid;grid-template-columns:repeat(10,1fr);gap:8px 10px}
+.pg .pgrid.of{grid-template-columns:repeat(6,1fr)}
+.pg .pc{display:flex;flex-direction:column;align-items:center;gap:2px;text-align:center;min-width:0}
+.pg .pimg{width:84px;height:108px;border:1px solid #111;background:#F2F4F8;display:flex;align-items:center;justify-content:center;font-size:9px;color:#888;overflow:hidden}
+.pg .pimg img{width:100%;height:100%;object-fit:cover;display:block}
+.pg .pno{font-weight:700;font-size:12px}
+.pg .pnm{font-size:9.5px;font-weight:600;line-height:1.15;max-width:100%;overflow-wrap:anywhere}
+.pg .pmeta{font-size:8.5px;color:#444;font-family:"JetBrains Mono",Consolas,monospace}
+`;
+function e2(s){return esc(s??"")}
+function formPage(t){const ps=t.players.map((p,j)=>({p,j})).filter(x=>filled(x.p)).slice(0,MAX_PLAYERS);
+  const rows=Array.from({length:MAX_PLAYERS},(_,i)=>{const x=ps[i];if(!x)return`<tr>${"<td></td>".repeat(15)}</tr>`;const p=x.p;
+    const role=[t.captain===x.j?"C":"",p.position==="L"?"L":""].filter(Boolean).join(" / ");
+    return`<tr><td class="c"><b>${e2(p.shirt)}</b></td><td class="nm">${e2(p.name)}</td><td class="c">${e2(p.position)}</td><td class="c"><b>${role}</b></td><td>${e2(p.chinese)}</td><td class="c mono">${e2(p.ic)}</td><td class="c mono">${fmtDob(p.dob)}</td><td class="c">${e2(p.weight)}</td><td class="c">${e2(p.height)}</td><td class="c">${e2(p.spike)}</td><td class="c">${e2(p.block)}</td><td class="c">${e2(p.intl)}</td><td class="c">${e2(p.natl)}</td><td class="c">${e2(p.other)}</td><td class="c">${p.dob?EVENT_YEAR-+p.dob.slice(0,4):""}</td></tr>`}).join("");
+  return`<div class="pg">
+   <div class="hd"><img src="${LOGO}" alt="">
+    <div><span class="tag">O-2 REGISTRATION FORM</span><div class="ttl">${e2(cfg.title)}</div><div class="sub">${e2(fmtRange())} · ${e2(cfg.venue)} · Malaysia Volleyball Association</div></div>
+    <div class="box"><span>TEAM:</span><div class="val">${e2(t.team.toUpperCase())}</div><span>CODE:</span><div class="val" style="display:flex;justify-content:space-between;align-items:center">${e2(t.code)}<span class="sx"><span>MEN <i class="cb">${t.sex==="L"?"X":""}</i></span><span>WOMEN <i class="cb">${t.sex==="P"?"X":""}</i></span></span></div></div>
+   </div>
+   <table><thead>
+    <tr><th rowspan="2" style="width:40px">Shirt No</th><th rowspan="2">Players Full Name (as in Identification Card)</th><th rowspan="2" style="width:38px">Pos</th><th rowspan="2" style="width:38px">C / L</th><th rowspan="2" style="width:84px">Name in Chinese</th><th rowspan="2" style="width:104px">Identification Card No</th><th rowspan="2" style="width:72px">Birth Date (dd/mm/yyyy)</th><th rowspan="2" style="width:46px">Weight (kg)</th><th rowspan="2" style="width:46px">Height (cm)</th><th colspan="2">Highest Reach (cm)</th><th colspan="3">Matches Played for State / National Team</th><th rowspan="2" style="width:36px">Age ${EVENT_YEAR}</th></tr>
+    <tr><th style="width:44px">Spike</th><th style="width:44px">2 Hands Block</th><th style="width:50px">Inter-national</th><th style="width:48px">National</th><th style="width:40px">Other</th></tr>
+   </thead><tbody>${rows}</tbody></table>
+   <div class="note"><span>Pos: S = Setter · OH = Outside Hitter · OP = Opposite · MB = Middle Blocker · L = Libero &nbsp;|&nbsp; C = Kapten / Captain</span><span>This form must be received by the organiser not later than <b>${e2(fmtDeadline(cfg,"short").toUpperCase())}</b></span></div>
+   <div class="ft">
+    <table><thead><tr><th style="width:24px">#</th><th style="width:140px">Function</th><th>Full Name (as in Identification Card)</th><th style="width:110px">Tel No</th></tr></thead>
+     <tbody>${OFFICIALS.map((o,i)=>`<tr><td class="c">${i+1}</td><td>${o[2].toUpperCase()}</td><td class="nm">${e2(t.officials[o[0]].name.toUpperCase())}</td><td class="mono">${e2(t.officials[o[0]].tel)}</td></tr>`).join("")}</tbody></table>
+    <div class="rt">
+     <table><thead><tr><th style="width:90px">Colour of 2 Uniforms</th><th>No 1</th><th>No 2</th></tr></thead><tbody>
+      <tr><td><b>SHIRT</b></td><td>${e2(t.kit.shirt1)}</td><td>${e2(t.kit.shirt2)}</td></tr><tr><td><b>SHORTS</b></td><td>${e2(t.kit.shorts1)}</td><td>${e2(t.kit.shorts2)}</td></tr></tbody></table>
+     <div class="decl">We, the undersigned, declare that, in accordance with the present regulations, the registered players are qualified for MAVA competitions. ${t.declared?"<span style='float:right'>☑ DIAKUI</span>":""}</div>
+     <div class="sig"><div>Honorary Secretary</div><div>President</div><span class="seal">Seal of<br>Association</span></div>
+    </div>
+   </div>
+   ${teamLate(t)?`<div style="border:2px solid #B4322B;color:#B4322B;font-weight:700;padding:3px 8px;font-size:11px;align-self:flex-end">PENDAFTARAN LEWAT · DENDA ${e2(fineText().toUpperCase())} · ${t.finePaid?"TELAH DIBAYAR":"BELUM DIBAYAR"}</div>`:""}
+   <div class="stamp">${t.status==="submitted"&&t.submittedAt?"Dihantar dalam talian: "+new Date(t.submittedAt).toLocaleString("ms-MY",{timeZone:"Asia/Kuala_Lumpur"}):"DRAF — belum dihantar"} · Dijana: ${new Date().toLocaleString("ms-MY",{timeZone:"Asia/Kuala_Lumpur"})}</div>
+  </div>`}
+function photoPage(t,ph){const ps=t.players.map((p,j)=>({p,j})).filter(x=>filled(x.p)).slice(0,MAX_PLAYERS);
+  const offs=OFFICIALS.filter(o=>t.officials[o[0]].name.trim());
+  const any=ps.some(x=>ph[slotP(t.sex,x.j)])||offs.some(o=>ph[slotO(t.sex,o[0])]);if(!any)return null;
+  const box=src=>`<div class="pimg">${src?`<img src="${src}" alt="">`:"TIADA<br>GAMBAR"}</div>`;
+  return`<div class="pg">
+   <div class="hd"><img src="${LOGO}" alt="">
+    <div><span class="tag">O-2 · LAMPIRAN GAMBAR</span><div class="ttl">${e2(cfg.title)}</div><div class="sub">${e2(fmtRange())} · ${e2(cfg.venue)}</div></div>
+    <div class="box"><span>TEAM:</span><div class="val">${e2(t.team.toUpperCase())}</div><span>CODE:</span><div class="val" style="display:flex;justify-content:space-between;align-items:center">${e2(t.code)}<span class="sx"><span>MEN <i class="cb">${t.sex==="L"?"X":""}</i></span><span>WOMEN <i class="cb">${t.sex==="P"?"X":""}</i></span></span></div></div>
+   </div>
+   <div class="sh">Pemain / Players</div>
+   <div class="pgrid">${ps.map(x=>{const p=x.p;const role=[t.captain===x.j?"C":"",p.position==="L"?"L":""].filter(Boolean).join("/");return`<div class="pc">${box(ph[slotP(t.sex,x.j)])}<div class="pno">${e2(p.shirt)}${role?` <span style="color:#13305F">(${role})</span>`:""}${p.position&&p.position!=="L"?` · ${e2(p.position)}`:""}</div><div class="pnm">${e2(p.name)}</div><div class="pmeta">${e2(p.ic)}</div></div>`}).join("")}</div>
+   <div class="sh" style="margin-top:4px">Pegawai Pasukan / Team Officials</div>
+   <div class="pgrid of">${offs.map(o=>`<div class="pc">${box(ph[slotO(t.sex,o[0])])}<div class="pno" style="font-size:10px">${o[2].toUpperCase()}</div><div class="pnm">${e2(t.officials[o[0]].name.toUpperCase())}</div><div class="pmeta">${e2(t.officials[o[0]].tel)}</div></div>`).join("")}</div>
+   <div class="stamp">Gambar saiz pasport (35 × 45 mm) dimuat naik dalam talian · Dijana: ${new Date().toLocaleString("ms-MY",{timeZone:"Asia/Kuala_Lumpur"})}</div>
+  </div>`}
+function teamPages(t,ph){return[formPage(t),photoPage(t,ph||{})].filter(Boolean)}
+function listPages(){const teams=allTeams();const head=(t,sub)=>`<div class="hd" style="grid-template-columns:70px 1fr"><img src="${LOGO}" alt=""><div><span class="tag">SENARAI INDUK</span><div class="ttl">${t}</div><div class="sub">${sub}</div></div></div>`;
+  const gen=cfg.title+" · "+fmtRange()+" · "+cfg.venue+" · Dijana "+new Date().toLocaleString("ms-MY",{timeZone:"Asia/Kuala_Lumpur"});
+  const pages=[];const tRows=teams.map((x,i)=>`<tr><td class="c">${i+1}</td><td class="nm">${e2(x.t.team)}</td><td class="c">${e2(x.t.code)}</td><td class="c">${SEX[x.key].ms}</td><td class="c">${x.t.status==="submitted"?"Dihantar":"Draf"}</td><td class="c">${x.t.players.filter(filled).length}</td><td>${e2(x.t.officials.manager.name.toUpperCase())}</td><td>${e2(x.t.officials.coach.name.toUpperCase())}</td><td class="mono">${e2(x.t.contact.tel||x.t.officials.manager.tel)}</td><td>${e2([x.t.kit.shirt1,x.t.kit.shirt2].filter(Boolean).join(" / "))}</td></tr>`);
+  const TH=`<tr><th style="width:28px">#</th><th>Pasukan</th><th style="width:50px">Kod</th><th style="width:70px">Kategori</th><th style="width:66px">Status</th><th style="width:50px">Pemain</th><th>Pengurus</th><th>Ketua Jurulatih</th><th style="width:100px">Telefon</th><th style="width:130px">Warna Baju</th></tr>`;
+  for(let i=0;i<Math.max(1,tRows.length);i+=26)pages.push(`<div class="pg">${head("Pasukan Berdaftar",gen)}<table><thead>${TH}</thead><tbody>${tRows.slice(i,i+26).join("")||'<tr><td colspan="10" class="c">Tiada pasukan</td></tr>'}</tbody></table></div>`);
+  const pl=[];teams.forEach(x=>x.t.players.forEach((p,j)=>{if(filled(p))pl.push(`<tr><td class="nm">${e2(x.t.code||x.t.team)}</td><td class="c">${SEX[x.key].ms[0]}</td><td class="c"><b>${e2(p.shirt)}</b></td><td class="nm">${e2(p.name)}</td><td>${e2(posName(p.position))}</td><td class="c"><b>${x.t.captain===j?"C":""}</b></td><td class="c mono">${e2(p.ic)}</td><td class="c mono">${fmtDob(p.dob)}</td><td class="c">${p.dob?EVENT_YEAR-+p.dob.slice(0,4):""}</td><td class="c">${e2(p.height)}</td><td class="c">${e2(p.spike)}</td><td class="c">${e2(p.block)}</td><td style="font-size:9.5px">${e2(playerIssues(p,x.t.players).map(i=>i[1]).join("; "))}</td></tr>`)}));
+  const PH=`<tr><th style="width:60px">Pasukan</th><th style="width:28px">L/P</th><th style="width:36px">No</th><th>Nama Penuh</th><th style="width:110px">Posisi</th><th style="width:28px">C</th><th style="width:104px">No. KP</th><th style="width:74px">Tarikh Lahir</th><th style="width:36px">Umur</th><th style="width:46px">Tinggi</th><th style="width:44px">Spike</th><th style="width:44px">Block</th><th style="width:170px">Semakan</th></tr>`;
+  for(let i=0;i<pl.length;i+=28)pages.push(`<div class="pg">${head("Senarai Pemain",`${pl.length} pemain · halaman ${i/28+1} / ${Math.ceil(pl.length/28)}`)}<table><thead>${PH}</thead><tbody>${pl.slice(i,i+28).join("")}</tbody></table></div>`);
+  return pages}
+async function makePdf(pages){const {jsPDF}=window.jspdf;const host=document.createElement("div");host.style.cssText="position:fixed;left:-12000px;top:0;width:1123px;pointer-events:none";host.setAttribute("aria-hidden","true");
+  host.innerHTML=`<style>${PDF_CSS}</style>`;document.body.appendChild(host);
+  try{await document.fonts?.ready;const doc=new jsPDF({orientation:"landscape",unit:"mm",format:"a4",compress:true});
+    for(let i=0;i<pages.length;i++){const w=document.createElement("div");w.innerHTML=pages[i];const pg=w.firstElementChild;host.appendChild(pg);
+      const c=await html2canvas(pg,{scale:2,backgroundColor:"#ffffff",logging:false,width:1123,height:794,windowWidth:1123});
+      if(i)doc.addPage();doc.addImage(c.toDataURL("image/jpeg",0.92),"JPEG",0,0,297,210);pg.remove()}
+    return doc.output("blob")}finally{host.remove()}}
+async function withBusy(btn,fn){const old=btn?.textContent;if(btn){btn.disabled=true;btn.textContent="Menjana PDF…"}try{await fn()}catch(e){toast("Gagal menjana PDF: "+(e?.message||e))}finally{if(btn){btn.disabled=false;btn.textContent=old}}}
+
+/* ---------- live clock (Malaysia time) ---------- */
+const fT=new Intl.DateTimeFormat("ms-MY",{timeZone:"Asia/Kuala_Lumpur",hour:"2-digit",minute:"2-digit",second:"2-digit",hour12:false});
+const fD=new Intl.DateTimeFormat("ms-MY",{timeZone:"Asia/Kuala_Lumpur",weekday:"long",day:"numeric",month:"long",year:"numeric"});
+function tick(){const n=new Date();$("#clk-t").textContent=fT.format(n).replace(/\./g,":");$("#clk-d").textContent=fD.format(n)+" · MYT";
+  if(!evId||!isDate(cfg.start)){$("#clk-c").textContent=evId?"Tarikh kejohanan belum ditetapkan":"Waktu Malaysia";return}
+  const EVENT_START=myt(cfg.start),EVENT_END=myt(isDate(cfg.end)?cfg.end:cfg.start,true);const day=86400000,days=Math.ceil((EVENT_START-n)/day);
+  const cl=evId+":"+regState();if(lastClosed!==null&&cl!==lastClosed){lastClosed=cl;applyCfg();if(view!=="set"&&!document.activeElement?.matches?.("#main input,#main select"))render()}lastClosed=cl;
+  $("#clk-c").textContent=n>EVENT_END?"Kejohanan telah tamat":n>=EVENT_START?"Kejohanan sedang berlangsung":days<=1?"Kejohanan bermula esok":`${days} hari lagi ke kejohanan`}
+setInterval(tick,1000);applyCfg();
+boot();
+</script>
+</body>
+</html>
