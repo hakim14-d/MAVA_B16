@@ -344,7 +344,7 @@ const posName = c => (POS.find(p=>p[0]===c)||["",""])[1];
 
 const SB_URL="https://xfvvwsoljdpzwmbrrylk.supabase.co";
 const SB_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhmdnZ3c29samRwendtYnJyeWxrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE1MzE4NzQsImV4cCI6MjA5NzEwNzg3NH0.49EkfwDmI-Z-SQovw56FrH2kYx1Qk6nHOxK40s2eBC0";
-let uid=null, isAdmin=false, demo=false, sess=null, superEvents=[], loginTab="team", loginEvent="", accList=[], newPins=[];
+let uid=null, isAdmin=false, demo=false, sess=null, superEvents=[], loginWho="", loginEvent="", accList=[], newPins=[], teamsPub={}, editPin=null;
 let myDoc=null, allDocs=new Map(), names={}; // team code -> {teams:{L,P}}
 let photos={}, photoSubs={}; // team code -> {slot: dataURL}
 let view="form";            // form | dash | edit
@@ -433,11 +433,11 @@ async function enter(r){isAdmin=sess.role!=="team";uid=sess.role==="team"?sess.c
   renderTabs();render();window.scrollTo(0,0)}
 async function loadSuper(){const r=await rpc("kj_events_all",{p_pin:sess.pin});superEvents=r.events||[];for(const e of superEvents)events.set(e.id,sanitizeCfg(e.cfg))}
 async function superOpen(id,v){evId=id;isNewEvent=false;cfg=sanitizeCfg(events.get(id));applyCfg();allDocs=new Map();try{await loadBoard()}catch(e){toast(e.message)}view=v||"dash";renderTabs();render();window.scrollTo(0,0)}
-async function logout(){sess=null;saveSess();evId=null;isAdmin=false;uid=null;myDoc=null;allDocs=new Map();photos={};draft=null;dirty=false;newPins=[];accList=[];superEvents=[];loginTab="team";cfg={...DEFAULT_CFG};view="login";applyCfg();renderWho();renderTabs();render();
+async function logout(){sess=null;saveSess();evId=null;isAdmin=false;uid=null;myDoc=null;allDocs=new Map();photos={};draft=null;dirty=false;newPins=[];accList=[];superEvents=[];loginWho="";cfg={...DEFAULT_CFG};view="login";applyCfg();renderWho();renderTabs();render();
   try{const r=await rpc("kj_events_public");events=new Map((r||[]).map(e=>[e.id,sanitizeCfg(e.cfg)]));if(view==="login")render()}catch(e){}}
 async function boot(){
   try{const r=await rpc("kj_events_public");events=new Map((r||[]).map(e=>[e.id,sanitizeCfg(e.cfg)]))}catch(e){toast(e.message)}
-  eventsLoaded=true;const h=hashEvent();if(h)loginEvent=h;if((location.hash||"").startsWith("#a-"))loginTab="admin";
+  eventsLoaded=true;const h=hashEvent();if(h)loginEvent=h;if((location.hash||"").startsWith("#a-"))loginWho="ADMIN";
   const s0=loadSess();
   if(s0){sess=s0;try{const r=await rpc("kj_login",{p_event:s0.event,p_code:s0.code,p_pin:s0.pin});await enter(r);return}catch(e){sess=null;saveSess()}}
   view="login";renderWho();renderTabs();render();
@@ -472,7 +472,7 @@ function renderTabs(){$("#hero").classList.toggle("compact",!!sess);const n=$("#
   else if(sess.role==="team")h=T("tab-form","Borang Pasukan",true);
   else if(!evId)h=T("tab-super","Semua Kejohanan",true);
   else{if(sess.role==="super")h+=T("tab-super","← Kejohanan",false);
-    if(!isNewEvent)h+=T("tab-dash","Papan Pemuka",view==="dash"||view==="edit")+T("tab-acc","Akses Pasukan",view==="acc");
+    if(!isNewEvent)h+=T("tab-dash","Papan Pemuka",view==="dash"||view==="edit")+T("tab-acc","Urus PIN",view==="acc");
     h+=T("tab-set",isNewEvent?"Kejohanan Baharu":"Tetapan & Kongsi",view==="set")}
   n.innerHTML=h;
   $("#tab-super")&&($("#tab-super").onclick=async()=>{if(dirty)await save();evId=null;isNewEvent=false;applyCfg();try{await loadSuper()}catch(e){}view="super";renderTabs();render()});
@@ -498,36 +498,47 @@ function render(){const m=$("#main");
 function evCard(id,c,extra=""){return`<article class="evc ${c.visible?"":"draft"}"><div class="chips">${stateChip(c)}</div>
    <h3>${esc(c.title||"Kejohanan tanpa nama")}</h3>
    <div class="em"><span><b>${esc(fmtRange(c,"short"))}</b> · ${esc(c.venue||"Tempat belum ditetapkan")}</span><span>Tarikh tutup: <b>${esc(c.mode==="open"?"Tiada had":fmtDeadline(c))}</b></span>${regState(c)==="late"?`<span style="color:var(--bad)">Pendaftaran lewat: denda ${esc(fineText(c))}</span>`:""}</div>${extra}</article>`}
+async function loadTeamsPub(ev){if(!ev||teamsPub[ev])return;try{teamsPub[ev]=await rpc("kj_event_teams_public",{p_event:ev})||[]}catch(e){teamsPub[ev]=[]}if(view==="login"||!sess)render()}
 function loginHTML(){if(!eventsLoaded)return`<div class="notice info">Memuatkan…</div>`;
   const pub=[...events.entries()].filter(([,c])=>c.visible);
+  if(!loginEvent&&pub.length)loginEvent=pub[0][0];
+  if(loginEvent&&!teamsPub[loginEvent])loadTeamsPub(loginEvent);
   const opts=pub.map(([id,c])=>`<option value="${esc(id)}" ${loginEvent===id?"selected":""}>${esc(c.title)}</option>`).join("")+(loginEvent&&!events.has(loginEvent)?`<option value="${esc(loginEvent)}" selected>Kejohanan dari pautan (${esc(loginEvent)})</option>`:"");
-  const tab=(k,l)=>`<button type="button" data-lt="${k}" aria-pressed="${loginTab===k}">${l}</button>`;
+  const teams=teamsPub[loginEvent]||[];const o=(v,l)=>`<option value="${esc(v)}" ${loginWho===v?"selected":""}>${esc(l)}</option>`;
+  const isSup=loginWho==="SUPER";
   return`<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:18px;align-items:start">
    <section class="sec"><div class="sec-h"><h2>Log Masuk</h2></div>
     <form class="sec-b" id="loginform" style="display:flex;flex-direction:column;gap:14px" novalidate>
-     <div class="seg" role="group" aria-label="Jenis pengguna" style="align-self:flex-start;flex-wrap:wrap;border-radius:14px">${tab("team","Pengurus Pasukan")}${tab("admin","Urus Setia")}${tab("super","Super Admin")}</div>
-     ${loginTab!=="super"?`<label class="f">Kejohanan<select class="i" id="l-ev" required>${opts||`<option value="">Tiada kejohanan dibuka</option>`}</select></label>`:""}
-     ${loginTab==="team"?`<label class="f">Kod pasukan<input class="i mono" id="l-code" autocomplete="username" placeholder="cth. SBH" maxlength="10" style="text-transform:uppercase" required></label>`:""}
-     <label class="f">PIN${loginTab==="admin"?" urus setia":loginTab==="super"?" super admin":""}<input class="i mono" id="l-pin" type="password" autocomplete="current-password" inputmode="text" maxlength="12" required></label>
+     <label class="f" ${isSup?"hidden":""}>Kejohanan<select class="i" id="l-ev">${opts||`<option value="">Tiada kejohanan dibuka</option>`}</select></label>
+     <label class="f">Log masuk sebagai<select class="i" id="l-who" required>
+       <option value="" ${loginWho?"":"selected"} disabled>Pilih pasukan atau peranan…</option>
+       <optgroup label="Pentadbir">${o("ADMIN","Urus Setia Kejohanan")}${o("SUPER","Super Admin")}</optgroup>
+       ${teams.length?`<optgroup label="Pasukan">${teams.map(t=>o(t.code,`${t.label||t.code} (${t.code})`)).join("")}</optgroup>`:pub.length?`<optgroup label="Pasukan"><option disabled>${teamsPub[loginEvent]?"Belum ada pasukan untuk kejohanan ini":"Memuatkan senarai pasukan…"}</option></optgroup>`:""}
+     </select></label>
+     <label class="f">PIN<input class="i mono" id="l-pin" type="password" autocomplete="current-password" inputmode="numeric" maxlength="12" required></label>
      <div id="l-err"></div>
      <button class="btn go" type="submit" id="l-go" style="align-self:flex-start">Log masuk</button>
-     <p class="hint" style="margin:0">${loginTab==="team"?"Kod pasukan dan PIN diberikan oleh urus setia kejohanan.":loginTab==="admin"?"PIN urus setia diberikan oleh super admin bagi setiap kejohanan.":"Untuk mencipta kejohanan dan menetapkan PIN urus setia."}</p>
+     <p class="hint" style="margin:0">${loginWho==="SUPER"?"Untuk mencipta kejohanan dan mengurus semua PIN.":loginWho==="ADMIN"?"PIN urus setia diberikan oleh super admin bagi setiap kejohanan.":"PIN pasukan diberikan oleh urus setia kejohanan."}</p>
     </form></section>
-   <section style="display:flex;flex-direction:column;gap:12px"><h2 style="font-family:var(--f-display);font-size:24px;margin:0;text-transform:uppercase">Kejohanan Dibuka</h2>
+   <section style="display:flex;flex-direction:column;gap:12px"><h2 style="font-family:var(--f-display);font-weight:800;font-size:28px;margin:0;text-transform:uppercase">Kejohanan Dibuka</h2>
     ${pub.length?`<div class="evgrid" style="grid-template-columns:1fr">${pub.map(([id,c])=>evCard(id,c,`<div class="actions"><button class="btn go" type="button" data-pick="${esc(id)}">Log masuk pasukan</button></div>`)).join("")}</div>`:`<div class="sec empty"><b>Belum ada kejohanan dibuka</b>Urus setia akan berkongsi pautan apabila pendaftaran dibuka.</div>`}
    </section></div>`}
-function bindLogin(){document.querySelectorAll("[data-lt]").forEach(b=>b.onclick=()=>{loginTab=b.dataset.lt;render();$("#l-pin")?.focus()});
-  document.querySelectorAll("[data-pick]").forEach(b=>b.onclick=()=>{loginEvent=b.dataset.pick;loginTab="team";render();$("#l-code")?.focus()});
-  $("#l-ev")?.addEventListener("change",e=>loginEvent=e.target.value);
-  $("#loginform").addEventListener("submit",async e=>{e.preventDefault();const ev=$("#l-ev")?.value||"",code=$("#l-code")?.value||"",pin=$("#l-pin").value;
-    if(loginTab!=="super"&&!ev){$("#l-err").innerHTML=`<ul class="checks"><li class="bad">Pilih kejohanan dahulu.</li></ul>`;return}
-    if(loginTab==="team"&&!code.trim()){$("#l-err").innerHTML=`<ul class="checks"><li class="bad">Masukkan kod pasukan.</li></ul>`;return}
+function bindLogin(){
+  document.querySelectorAll("[data-pick]").forEach(b=>b.onclick=()=>{loginEvent=b.dataset.pick;if(loginWho==="SUPER"||loginWho==="ADMIN")loginWho="";render();$("#l-who")?.focus()});
+  $("#l-ev")?.addEventListener("change",e=>{loginEvent=e.target.value;if(loginWho!=="SUPER"&&loginWho!=="ADMIN")loginWho="";render();$("#l-who")?.focus()});
+  $("#l-who")?.addEventListener("change",e=>{const was=loginWho==="SUPER";loginWho=e.target.value;if(was!==(loginWho==="SUPER")){render()}const h=document.querySelector("#loginform .hint");if(h)h.textContent=loginWho==="SUPER"?"Untuk mencipta kejohanan dan mengurus semua PIN.":loginWho==="ADMIN"?"PIN urus setia diberikan oleh super admin bagi setiap kejohanan.":"PIN pasukan diberikan oleh urus setia kejohanan.";$("#l-pin")?.focus()});
+  $("#loginform").addEventListener("submit",async e=>{e.preventDefault();const ev=$("#l-ev")?.value||"",who=$("#l-who").value,pin=$("#l-pin").value;
+    const err=m=>{$("#l-err").innerHTML=`<ul class="checks"><li class="bad">${esc(m)}</li></ul>`};
+    if(!who){err("Pilih pasukan atau peranan dahulu.");return}
+    if(who!=="SUPER"&&!ev){err("Pilih kejohanan dahulu.");return}
+    if(!pin){err("Masukkan PIN.");return}
     const b=$("#l-go");b.disabled=true;b.textContent="Menyemak…";
-    try{await doLogin(loginTab,ev,code,pin)}catch(err){$("#l-err").innerHTML=`<ul class="checks"><li class="bad">${esc(err.message)}</li></ul>`;b.disabled=false;b.textContent="Log masuk"}})}
+    const role=who==="SUPER"?"super":who==="ADMIN"?"admin":"team";
+    try{await doLogin(role,ev,who,pin)}catch(x){err(x.message);b.disabled=false;b.textContent="Log masuk"}})}
 
 /* ---------- super admin: all tournaments ---------- */
 function superHTML(){const cards=superEvents.map(e=>{const c=sanitizeCfg(e.cfg);return evCard(e.id,c,`<div class="em"><span>${e.teams} pasukan · ${e.submitted} dihantar${e.has_admin_pin?"":" · <b style='color:var(--bad)'>PIN urus setia belum ditetapkan</b>"}</span></div>
-    <div class="actions"><button class="btn" type="button" data-sev="${esc(e.id)}" data-v="dash">Papan pemuka</button><button class="btn" type="button" data-sev="${esc(e.id)}" data-v="acc">Akses pasukan</button><button class="btn ${c.visible?"":"go"}" type="button" data-sev="${esc(e.id)}" data-v="set">${c.visible?"Tetapan & kongsi":"Siapkan & kongsi"}</button></div>`)}).join("");
+    <div class="actions"><button class="btn" type="button" data-sev="${esc(e.id)}" data-v="dash">Papan pemuka</button><button class="btn" type="button" data-sev="${esc(e.id)}" data-v="acc">Urus PIN</button><button class="btn ${c.visible?"":"go"}" type="button" data-sev="${esc(e.id)}" data-v="set">${c.visible?"Tetapan & kongsi":"Siapkan & kongsi"}</button></div>`)}).join("");
   return`<section style="display:flex;flex-direction:column;gap:12px"><div class="sec-h" style="padding:0;border:0"><h2 style="font-family:var(--f-display);font-size:26px;margin:0;text-transform:uppercase">Semua Kejohanan</h2><p>Kejohanan berstatus Draf hanya dilihat oleh urus setia sehingga diterbitkan.</p></div>
    <div class="evgrid">${cards}<button class="evnew" type="button" id="evnew">+ Kejohanan baharu</button></div></section>
    <section class="sec"><div class="sec-h"><h2>Tukar PIN Super Admin</h2><p>Sekurang-kurangnya 6 aksara.</p></div>
@@ -674,7 +685,7 @@ Pendaftaran selepas tarikh tutup dikenakan denda ${fineText(c)}.`:""}
 
 Daftar pasukan anda di:
 ${shareLink()}
-Log masuk dengan kod pasukan dan PIN yang diberikan oleh urus setia.`}
+Pilih nama pasukan anda dan masukkan PIN yang diberikan oleh urus setia.`}
 function setHTML(){const c=cfg;const [dd,dt]=(c.deadline||"T").split("T");const sup=sess.role==="super";const se=superEvents.find(x=>x.id===evId);const nTeams=sup?(se?.teams||0):allDocs.size;
   return `<section class="sec"><div class="sec-h"><h2>${isNewEvent?"Kejohanan Baharu":"Tetapan Kejohanan"}</h2><p>Maklumat ini dipaparkan pada borang, jam, papan pemuka dan semua PDF.</p></div>
    <form class="sec-b" id="setform" style="display:flex;flex-direction:column;gap:18px" novalidate>
@@ -711,7 +722,7 @@ function setHTML(){const c=cfg;const [dd,dt]=(c.deadline||"T").split("T");const 
     <div class="sec-b share">
      <ol>
       <li><b>Terbitkan kejohanan</b> supaya pengurus pasukan boleh log masuk. ${c.visible?`<span class="chip ok">Sudah diterbitkan</span> <button class="btn sm" type="button" id="unpub">Tarik balik ke draf</button>`:`<button class="btn sm go" type="button" id="pub">Terbitkan sekarang</button>`}</li>
-      <li><b>Jana kod & PIN pasukan</b> di tab <button class="back" type="button" id="goacc">Akses Pasukan</button>.</li>
+      <li><b>Jana PIN pasukan</b> di tab <button class="back" type="button" id="goacc">Urus PIN</button>.</li>
       <li><b>Hantar pautan</b> di bawah, bersama kod dan PIN setiap pasukan, melalui WhatsApp atau e-mel.</li>
      </ol>
      <div class="copyrow"><input class="i mono" id="sh-link" readonly value="${esc(shareLink())}" aria-label="Pautan kejohanan"><button class="btn" type="button" id="cp-link">Salin pautan</button></div>
@@ -757,13 +768,16 @@ function bindSet(){const f=$("#setform");updatePrev();
 /* ---------- team access codes & PINs (admin) ---------- */
 const ISO={JHR:"01",KDH:"02",KTN:"03",MLK:"04",NSN:"05",PHG:"06",PNG:"07",PRK:"08",PLS:"09",SGR:"10",TRG:"11",SBH:"12",SWK:"13",KUL:"14",LBN:"15",PJY:"16"};
 const flag=c=>ISO[c]?`<img class="flg" src="../flags/MY-${ISO[c]}.svg" alt="" width="30" height="20">`:"";
+function addPin(x){newPins=[x,...newPins.filter(p=>p.code!==x.code)]}
 const genPin=()=>String(Math.floor(100000+Math.random()*900000));
 function accHTML(){const have=new Set(accList.map(a=>a.code));const missing=STATES.filter(s=>!have.has(s[1]));
   return`${newPins.length?`<section class="sec" style="border-color:var(--yellow)"><div class="sec-h"><h2>PIN Baharu: Salin Sekarang</h2><p>PIN hanya dipaparkan sekali. Simpan atau hantar kepada pengurus pasukan sekarang.</p></div>
     <div class="sec-b share"><div class="tbl-wrap"><table class="dash" style="min-width:420px"><thead><tr><th>Pasukan</th><th>Kod</th><th>PIN</th></tr></thead><tbody>${newPins.map(p=>`<tr><td class="tname">${flag(p.code)}${esc(p.label)}</td><td class="mono">${esc(p.code)}</td><td class="mono" style="font-size:16px;font-weight:700">${esc(p.pin)}</td></tr>`).join("")}</tbody></table></div>
-     <textarea id="np-text" readonly>${esc(newPins.map(p=>`${p.label} (${cfg.title})\nPautan: ${shareLink()}\nKod pasukan: ${p.code}\nPIN: ${p.pin}`).join("\n\n"))}</textarea>
+     <textarea id="np-text" readonly>${esc(newPins.map(p=>`${p.label} (${cfg.title})\nPautan: ${shareLink()}\nLog masuk sebagai: ${p.code==="ADMIN"?"Urus Setia Kejohanan":p.label+" ("+p.code+")"}\nPIN: ${p.pin}`).join("\n\n"))}</textarea>
      <div class="actions"><button class="btn primary" type="button" id="np-copy">Salin semua</button><button class="btn" type="button" id="np-clear">Selesai, sembunyikan PIN</button></div></div></section>`:""}
-   <section class="sec"><div class="sec-h"><h2>Akses Pasukan</h2><p>${accList.length} pasukan boleh log masuk. ${cfg.visible?"":"<b>Kejohanan masih draf: pasukan belum boleh log masuk.</b>"}</p></div>
+   <section class="sec"><div class="sec-h"><h2>PIN Urus Setia</h2><p>${sess.role==="super"?"Super admin boleh menetapkan PIN baharu untuk urus setia kejohanan ini.":"Tukar PIN log masuk urus setia kejohanan ini."}</p></div>
+    <form class="sec-b copyrow" id="acc-apin" novalidate><input class="i mono" id="acc-apin-v" maxlength="12" value="${genPin()}" aria-label="PIN urus setia baharu"><button class="btn primary" type="submit">Tetapkan PIN urus setia</button></form></section>
+   <section class="sec"><div class="sec-h"><h2>PIN Pasukan</h2><p>${accList.length} pasukan boleh log masuk. ${cfg.visible?"":"<b>Kejohanan masih draf: pasukan belum boleh log masuk.</b>"}</p></div>
     <form class="sec-b setgrid" id="accform" novalidate style="align-items:end">
      <label class="f">Nama pasukan<input class="i" id="ac-label" list="states" maxlength="80" placeholder="cth. Sabah"></label>
      <label class="f">Kod pasukan<input class="i mono" id="ac-code" maxlength="10" placeholder="cth. SBH" style="text-transform:uppercase"></label>
@@ -772,19 +786,25 @@ function accHTML(){const have=new Set(accList.map(a=>a.code));const missing=STAT
      <datalist id="states">${STATES.map(s=>`<option value="${s[0]}">`).join("")}</datalist>
     </form>
     ${accList.length?`<div class="tbl-wrap"><table class="dash"><thead><tr><th>Pasukan</th><th>Kod</th><th>Borang</th><th></th></tr></thead><tbody>${accList.map(a=>{const d=allDocs.get(a.code);const st=["L","P"].map(k=>d?.teams?.[k]?`${SEX[k].ms}: ${d.teams[k].status==="submitted"?"Dihantar":"Draf"}`:"").filter(Boolean).join(" · ");
-      return`<tr><td class="tname">${flag(a.code)}${esc(a.label||"")}</td><td class="mono">${esc(a.code)}</td><td style="color:var(--muted);font-size:13px">${esc(st||"Belum mula")}</td><td style="white-space:nowrap"><button class="btn sm" type="button" data-reset="${esc(a.code)}">PIN baharu</button> <button class="btn sm danger" type="button" data-adel="${esc(a.code)}">Buang akses</button></td></tr>`}).join("")}</tbody></table></div>`:`<div class="empty"><b>Belum ada pasukan</b>Tambah pasukan satu demi satu, atau tambah semua negeri sekaligus.</div>`}
+      return`<tr><td class="tname">${flag(a.code)}${esc(a.label||"")}</td><td class="mono">${esc(a.code)}</td><td style="color:var(--muted);font-size:13px">${esc(st||"Belum mula")}</td><td style="white-space:nowrap">${editPin===a.code?`<span class="copyrow" style="display:inline-flex;flex-wrap:nowrap;gap:6px"><input class="i mono" id="ep-v" maxlength="12" value="${genPin()}" style="width:110px" aria-label="PIN baharu ${esc(a.label||a.code)}"><button class="btn sm go" type="button" data-epsave="${esc(a.code)}">Simpan</button><button class="btn sm" type="button" data-epcancel="1">Batal</button></span>`:`<button class="btn sm" type="button" data-reset="${esc(a.code)}">Tukar PIN</button> <button class="btn sm danger" type="button" data-adel="${esc(a.code)}">Buang akses</button>`}</td></tr>`}).join("")}</tbody></table></div>`:`<div class="empty"><b>Belum ada pasukan</b>Tambah pasukan satu demi satu, atau tambah semua negeri sekaligus.</div>`}
    </section>`}
 async function reloadAcc(){const r=await rpc("kj_access_list",A());accList=r.access||[];render()}
 function bindAcc(){
   $("#ac-label")?.addEventListener("input",e=>{const s=STATES.find(s=>s[0].toLowerCase()===e.target.value.trim().toLowerCase());if(s&&!$("#ac-code").value)$("#ac-code").value=s[1]});
   $("#accform")?.addEventListener("submit",async e=>{e.preventDefault();const label=$("#ac-label").value.trim(),code=$("#ac-code").value.trim().toUpperCase(),pin=$("#ac-pin").value.trim();
     if(!label){toast("Masukkan nama pasukan");return}
-    try{await rpc("kj_access_set",{...A(),p_team:code,p_label:label,p_new_pin:pin});newPins.unshift({label,code,pin});toast("Pasukan ditambah");await reloadAcc()}catch(err){toast(err.message)}});
+    try{await rpc("kj_access_set",{...A(),p_team:code,p_label:label,p_new_pin:pin});addPin({label,code,pin});toast("Pasukan ditambah");await reloadAcc()}catch(err){toast(err.message)}});
   $("#ac-all")?.addEventListener("click",async e=>{const b=e.currentTarget;b.disabled=true;const have=new Set(accList.map(a=>a.code));let n=0;
-    for(const[label,code]of STATES){if(have.has(code))continue;const pin=genPin();b.textContent=`Menambah ${label}…`;try{await rpc("kj_access_set",{...A(),p_team:code,p_label:label,p_new_pin:pin});newPins.push({label,code,pin});n++}catch(err){toast(label+": "+err.message)}}
+    for(const[label,code]of STATES){if(have.has(code))continue;const pin=genPin();b.textContent=`Menambah ${label}…`;try{await rpc("kj_access_set",{...A(),p_team:code,p_label:label,p_new_pin:pin});addPin({label,code,pin});n++}catch(err){toast(label+": "+err.message)}}
     toast(n+" pasukan ditambah");await reloadAcc()});
-  document.querySelectorAll("[data-reset]").forEach(b=>b.onclick=async()=>{const code=b.dataset.reset,a=accList.find(x=>x.code===code);if(b.dataset.arm!=="1"){b.dataset.arm="1";b.textContent="Sahkan PIN baharu";toast("PIN lama tidak lagi berfungsi selepas ini. Tekan sekali lagi.");return}
-    const pin=genPin();try{await rpc("kj_access_set",{...A(),p_team:code,p_label:a?.label||"",p_new_pin:pin});newPins.unshift({label:a?.label||code,code,pin});toast("PIN baharu dijana");render();window.scrollTo(0,0)}catch(err){toast(err.message)}});
+  document.querySelectorAll("[data-reset]").forEach(b=>b.onclick=()=>{editPin=b.dataset.reset;render();const v=$("#ep-v");if(v){v.focus();v.select()}});
+  document.querySelectorAll("[data-epcancel]").forEach(b=>b.onclick=()=>{editPin=null;render()});
+  document.querySelectorAll("[data-epsave]").forEach(b=>b.onclick=async()=>{const code=b.dataset.epsave,a=accList.find(x=>x.code===code),pin=$("#ep-v").value.trim();
+    if(!/^[0-9A-Za-z]{4,12}$/.test(pin)){toast("PIN mesti 4 hingga 12 huruf atau nombor");return}
+    try{await rpc("kj_access_set",{...A(),p_team:code,p_label:a?.label||"",p_new_pin:pin});addPin({label:a?.label||code,code,pin});editPin=null;toast("PIN "+(a?.label||code)+" ditukar. PIN lama tidak lagi berfungsi.");render();window.scrollTo(0,0)}catch(err){toast(err.message)}});
+  $("#ep-v")?.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();document.querySelector("[data-epsave]")?.click()}if(e.key==="Escape"){editPin=null;render()}});
+  $("#acc-apin")?.addEventListener("submit",async e=>{e.preventDefault();const p=$("#acc-apin-v").value.trim();if(!/^[0-9A-Za-z]{4,12}$/.test(p)){toast("PIN mesti 4 hingga 12 huruf atau nombor");return}
+    try{await rpc("kj_event_admin_pin",{...A(),p_new:p});if(sess.role==="admin"){sess.pin=p;saveSess()}addPin({label:"Urus Setia",code:"ADMIN",pin:p});toast("PIN urus setia ditetapkan");render();window.scrollTo(0,0)}catch(err){toast(err.message)}});
   document.querySelectorAll("[data-adel]").forEach(b=>b.onclick=async()=>{if(b.dataset.arm!=="1"){b.dataset.arm="1";b.textContent="Sahkan buang";toast("Pasukan tidak boleh log masuk lagi. Borang sedia ada kekal. Tekan sekali lagi.");return}
     try{await rpc("kj_access_delete",{...A(),p_team:b.dataset.adel});toast("Akses dibuang");await reloadAcc()}catch(err){toast(err.message)}});
   $("#np-copy")?.addEventListener("click",()=>copyText($("#np-text").value,$("#np-text")));
