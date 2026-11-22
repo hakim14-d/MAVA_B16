@@ -11,58 +11,83 @@
 <body>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Source+Sans+3:wght@400;600;700&family=JetBrains+Mono:wght@500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800;900&family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap">
 <style>
 /* Layout: navy event band → role tabs → stacked form sections (team, players table, officials, kit, declaration) / admin dashboard */
+/* Layout: MAVA court hero (stripes, crest, gold year, orange court clock, net) → tabs → stacked sections. Palette shared with the MAVA B16 site. */
 :root{
-  --bg:#EEF2F8; --surface:#FFFFFF; --sunk:#F5F7FB; --ink:#0F1B33; --muted:#56637D; --line:#D6DDEA;
-  --band:#13305F; --on-band:#F4F7FD; --band-muted:#AFC0DE;
-  --blue:#1F4E9E; --blue-soft:#E3EBF8; --yellow:#F2C200; --on-yellow:#1B1500;
-  --ok:#1C7C4D; --ok-soft:#E1F3EA; --warn:#9A6200; --warn-soft:#FBF0D6; --bad:#B4322B; --bad-soft:#FBE3E1;
-  --f-display:"Barlow Condensed","Arial Narrow",Arial,sans-serif;
-  --f-body:"Source Sans 3","Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --bg:#eef2f8; --surface:#ffffff; --sunk:#e3e9f2; --ink:#0f1d33; --muted:#566377; --line:#cfd8e5;
+  --band:#29306e; --band-deep:#1c2152; --band-hi:#3a4290; --on-band:#ffffff; --band-muted:#c9cdf0;
+  --blue:#29306e; --blue-soft:#e2e5f6; --yellow:#f6c343; --on-yellow:#1b1500;
+  --court:#e46f24; --on-court:#ffffff; --mava-red:#c1121f; --net:#e7e854; --chalk:#ffffff;
+  --ok:#11734a; --ok-soft:#d9f2e5; --warn:#94560a; --warn-soft:#fcecd0; --bad:#b3242c; --bad-soft:#fbe1e3;
+  --f-display:"Big Shoulders Display","Oswald","Arial Narrow",Impact,sans-serif;
+  --f-body:"Figtree",system-ui,-apple-system,"Segoe UI",sans-serif;
   --f-mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
-  --r:8px;
+  --r:12px;
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
-  --bg:#0B1222; --surface:#121C31; --sunk:#0F182B; --ink:#E6ECF6; --muted:#97A4BD; --line:#26344F;
-  --band:#0E1F3E; --on-band:#F4F7FD; --band-muted:#9EB0D3;
-  --blue:#86A9EE; --blue-soft:#1B2C4D; --yellow:#F2C94C; --on-yellow:#1B1500;
-  --ok:#5CC48F; --ok-soft:#14301F; --warn:#E5B04D; --warn-soft:#33270F; --bad:#F08079; --bad-soft:#3A1A19;
+  --bg:#0c1626; --surface:#132137; --sunk:#1a2a44; --ink:#e7eef8; --muted:#97a7bd; --line:#263a58;
+  --band:#262d68; --band-deep:#181c47; --band-hi:#343c86; --band-muted:#b9bfe8;
+  --blue:#9ea8f6; --blue-soft:#222a55; --yellow:#f7cd5e; --court:#dd6a22;
+  --ok:#5fd59d; --ok-soft:#12382a; --warn:#f2b864; --warn-soft:#3b2a12; --bad:#ff8d93; --bad-soft:#3e1b20;
   color-scheme:dark}}
 :root[data-theme="dark"]{
-  --bg:#0B1222; --surface:#121C31; --sunk:#0F182B; --ink:#E6ECF6; --muted:#97A4BD; --line:#26344F;
-  --band:#0E1F3E; --on-band:#F4F7FD; --band-muted:#9EB0D3;
-  --blue:#86A9EE; --blue-soft:#1B2C4D; --yellow:#F2C94C; --on-yellow:#1B1500;
-  --ok:#5CC48F; --ok-soft:#14301F; --warn:#E5B04D; --warn-soft:#33270F; --bad:#F08079; --bad-soft:#3A1A19;
+  --bg:#0c1626; --surface:#132137; --sunk:#1a2a44; --ink:#e7eef8; --muted:#97a7bd; --line:#263a58;
+  --band:#262d68; --band-deep:#181c47; --band-hi:#343c86; --band-muted:#b9bfe8;
+  --blue:#9ea8f6; --blue-soft:#222a55; --yellow:#f7cd5e; --court:#dd6a22;
+  --ok:#5fd59d; --ok-soft:#12382a; --warn:#f2b864; --warn-soft:#3b2a12; --bad:#ff8d93; --bad-soft:#3e1b20;
   color-scheme:dark}
 *{box-sizing:border-box}
-body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.45}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.5;font-variant-numeric:tabular-nums}
 button,input,select{font:inherit;color:inherit}
 :focus-visible{outline:2px solid var(--blue);outline-offset:2px}
 
-.band{background:var(--band);color:var(--on-band);border-bottom:4px solid var(--yellow)}
-.band-in{max-width:1180px;margin:0 auto;padding:18px 16px 0;display:flex;flex-direction:column;gap:14px}
-.band-top{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:flex-end;justify-content:space-between}
-.eyebrow{font-family:var(--f-mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--band-muted)}
-h1{font-family:var(--f-display);font-weight:700;font-size:clamp(26px,4.4vw,40px);line-height:1;margin:4px 0 0;letter-spacing:.01em;text-wrap:balance;text-transform:uppercase}
-.meta{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:14px;color:var(--band-muted)}
-.meta b{color:var(--on-band);font-weight:600}
-.who{font-size:13px;color:var(--band-muted);text-align:right}
+.band{background:radial-gradient(120% 90% at 15% 0%,var(--band-hi) 0%,var(--band) 55%,var(--band-deep) 100%);color:var(--on-band);position:relative}
+.band::before{content:"";display:block;height:12px;background:repeating-linear-gradient(90deg,var(--mava-red) 0 22px,var(--chalk) 22px 36px)}
+.band::after{content:"";display:block;height:18px;background-color:var(--net);background-image:linear-gradient(var(--band-deep) 1.5px,transparent 1.5px),linear-gradient(90deg,var(--band-deep) 1.5px,transparent 1.5px);background-size:14px 11px;background-position:-1px -1px}
+.band-in{max-width:1180px;margin:0 auto;padding:16px 16px 0;display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,.8fr);gap:18px 28px;align-items:center}
+.band-top{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;justify-content:space-between}
+.org{font-weight:600;font-size:14px;opacity:.9}
+.brand{display:grid;grid-template-columns:auto minmax(0,1fr);gap:22px;align-items:center;min-width:0}
+.crest{width:clamp(88px,11vw,150px);height:auto;filter:drop-shadow(0 10px 18px rgba(0,0,0,.35))}
+@media (prefers-reduced-motion:no-preference){.crest{animation:crestIn .9s cubic-bezier(.2,.8,.25,1.15) both}@keyframes crestIn{from{opacity:0;transform:translateY(-24px) rotate(-6deg) scale(.85)}to{opacity:1;transform:none}}}
+h1{font-family:var(--f-display);font-weight:900;font-size:clamp(32px,4.6vw,60px);line-height:.92;margin:0 0 14px;letter-spacing:-.005em;text-wrap:balance;text-transform:uppercase;overflow-wrap:anywhere}
+h1 .yr{color:var(--yellow);white-space:nowrap}
+.facts{display:flex;flex-wrap:wrap;gap:8px 22px;font-size:15px}
+.facts span{display:flex;flex-direction:column}
+.facts small{opacity:.75;font-size:12.5px}
+.facts b{font-weight:600}
+.facts .chip{align-self:flex-start;margin-top:3px}
+.who{font-size:13px;color:var(--band-muted);text-align:right;line-height:1.35}
 .who b{display:block;color:var(--on-band);font-size:14px}
-.band-top>div:first-child{flex:1 1 420px;min-width:0}
-.side{flex:none;display:flex;flex-direction:column;align-items:flex-end;gap:10px}
-.clock{display:flex;flex-direction:column;align-items:flex-end;gap:2px;padding:8px 12px;border:1px solid rgba(255,255,255,.18);border-radius:8px;background:rgba(255,255,255,.05)}
-.clock .t{font-family:var(--f-mono);font-size:24px;line-height:1;color:var(--on-band);font-variant-numeric:tabular-nums;letter-spacing:.02em}
-.clock .t .live{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--yellow);margin-right:8px;vertical-align:middle;animation:blink 2s infinite}
-.clock .d{font-size:13px;color:var(--on-band)}
-.clock .c{font-size:12px;color:var(--band-muted)}
-@keyframes blink{50%{opacity:.25}}
-@media (max-width:640px){.side{align-items:flex-start}.clock{align-items:flex-start}.who{text-align:left}}
-.tabs{display:flex;gap:2px;overflow-x:auto}
-.tab{background:transparent;border:0;color:var(--band-muted);padding:10px 16px;font-family:var(--f-display);font-size:18px;font-weight:600;letter-spacing:.03em;text-transform:uppercase;cursor:pointer;border-radius:6px 6px 0 0;white-space:nowrap}
-.tab[aria-selected="true"]{background:var(--yellow);color:var(--on-yellow)}
-.tab:hover:not([aria-selected="true"]){color:var(--on-band)}
+.court{position:relative;aspect-ratio:2/1;width:100%;max-width:460px;justify-self:end;background:var(--court);border:3px solid var(--chalk);border-radius:2px;box-shadow:0 0 0 12px rgba(255,255,255,.06);color:var(--on-court)}
+.court::before{content:"";position:absolute;inset:0 auto 0 50%;width:4px;margin-left:-2px;background:var(--chalk)}
+.court .att{position:absolute;top:0;bottom:0;width:2px;background:var(--chalk);opacity:.45}
+.court .att.l{left:33.33%}.court .att.r{right:33.33%}
+.court .net{position:absolute;left:50%;top:-12px;bottom:-12px;width:10px;margin-left:-5px;background:repeating-linear-gradient(0deg,rgba(255,255,255,.95) 0 2px,transparent 2px 7px);border-left:2px solid var(--chalk);border-right:2px solid var(--chalk);opacity:.55}
+.court .count,.court .side{position:absolute;top:0;bottom:0;display:grid;place-content:center;text-align:center;padding:8px;gap:4px}
+.court .count{left:0;right:50%}.court .side{left:50%;right:0}
+.court .count b{font-family:var(--f-display);font-weight:900;font-size:clamp(38px,5.6vw,76px);line-height:.85}
+.court .side b{font-family:var(--f-display);font-weight:800;font-size:clamp(26px,3.6vw,44px);line-height:.9;letter-spacing:.02em}
+.court span{font-weight:600;font-size:12.5px;line-height:1.25;max-width:18ch;margin:0 auto}
+.ball{position:absolute;width:24px;height:24px;border-radius:50%;right:6%;top:9%;background:conic-gradient(from 20deg,var(--yellow) 0 33%,#1f5fc4 0 66%,#fff 0);box-shadow:0 6px 0 rgba(0,0,0,.18)}
+@media (prefers-reduced-motion:no-preference){.ball{animation:serve 1.6s cubic-bezier(.3,.6,.4,1) .3s both}@keyframes serve{from{transform:translate(-260%,160%) rotate(-200deg);opacity:0}to{transform:none;opacity:1}}}
+.tabs{grid-column:1/-1;display:flex;gap:2px;overflow-x:auto;scrollbar-width:none;margin-top:4px}
+.tab{background:transparent;border:0;color:var(--on-band);opacity:.8;padding:10px 16px 12px;font-family:var(--f-body);font-size:14.5px;font-weight:700;cursor:pointer;border-radius:8px 8px 0 0;white-space:nowrap}
+.tab[aria-selected="true"]{background:var(--yellow);color:var(--on-yellow);opacity:1}
+.tab:hover:not([aria-selected="true"]){opacity:1;background:rgba(255,255,255,.08)}
+/* compact band once signed in */
+.band.compact .band-in{padding-top:12px;gap:12px 24px}
+.band.compact .crest{width:clamp(52px,6vw,72px)}
+.band.compact h1{font-size:clamp(26px,3.4vw,42px);margin-bottom:8px}
+.band.compact .court{max-width:300px;box-shadow:0 0 0 8px rgba(255,255,255,.06)}
+.band.compact .court .count b{font-size:clamp(28px,3.4vw,44px)}
+.band.compact .court .side b{font-size:clamp(20px,2.4vw,28px)}
+.band.compact .court span{font-size:11px}
+.band.compact .ball{display:none}
+@media (max-width:760px){.band-in{grid-template-columns:1fr}.court{justify-self:stretch;max-width:520px}.band.compact .court{max-width:none;aspect-ratio:4/1}.who{text-align:left}}
+@media (max-width:560px){.brand{grid-template-columns:1fr;gap:12px}.crest{width:84px}.band.compact .brand{grid-template-columns:auto minmax(0,1fr)}.band.compact .crest{width:48px}}
 
 main{max-width:1180px;margin:0 auto;padding-inline:16px;padding-block:20px 60px;display:flex;flex-direction:column;gap:18px}
 .notice{border:1px solid var(--line);background:var(--surface);border-radius:var(--r);padding:12px 14px;font-size:14px;display:flex;gap:10px;align-items:flex-start}
@@ -77,9 +102,9 @@ main{max-width:1180px;margin:0 auto;padding-inline:16px;padding-block:20px 60px;
 .seg button[aria-pressed="true"]{background:var(--blue);color:var(--surface)}
 .savestate{font-size:13px;color:var(--muted);font-family:var(--f-mono)}
 
-.sec{background:var(--surface);border:1px solid var(--line);border-radius:var(--r)}
+.sec{background:var(--surface);border:1.5px solid var(--line);border-radius:14px;min-width:0}
 .sec-h{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:baseline;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--line)}
-.sec-h h2{font-family:var(--f-display);font-size:22px;font-weight:700;margin:0;text-transform:uppercase;letter-spacing:.02em}
+.sec-h h2{font-family:var(--f-display);font-size:28px;font-weight:800;line-height:1;margin:0;text-transform:uppercase;letter-spacing:.005em}
 .sec-h h2 small{font-family:var(--f-mono);font-size:11px;color:var(--muted);font-weight:500;letter-spacing:.08em;margin-left:8px}
 .sec-h p{margin:0;font-size:13px;color:var(--muted)}
 .sec-b{padding:16px}
@@ -155,12 +180,12 @@ td.ph{width:56px;text-align:center}
 .checks li.bad::before{background:var(--bad)}
 
 .actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
-.btn{border:1px solid var(--line);background:var(--surface);padding:10px 16px;border-radius:6px;font-weight:700;cursor:pointer;display:inline-flex;gap:8px;align-items:center;font-size:14px}
+.btn{border:1.5px solid var(--line);background:var(--surface);padding:8px 16px;min-height:40px;border-radius:8px;font-weight:600;cursor:pointer;display:inline-flex;gap:8px;align-items:center;font-size:14px}
 .btn:hover{border-color:var(--blue);color:var(--blue)}
 .btn.primary{background:var(--blue);border-color:var(--blue);color:var(--surface)}
 .btn.primary:hover{filter:brightness(1.1);color:var(--surface)}
-.btn.go{background:var(--yellow);border-color:var(--yellow);color:var(--on-yellow)}
-.btn.go:hover{filter:brightness(1.05);color:var(--on-yellow)}
+.btn.go{background:var(--court);border-color:var(--court);color:var(--on-court)}
+.btn.go:hover{filter:brightness(1.06);color:var(--on-court)}
 .btn.danger{color:var(--bad)}
 .btn:disabled{opacity:.5;cursor:not-allowed;filter:none}
 .btn.sm{padding:6px 10px;font-size:13px}
@@ -176,9 +201,9 @@ td.ph{width:56px;text-align:center}
 .modes small{color:var(--muted);font-size:12.5px}
 .hint{font-size:12.5px;color:var(--muted);text-transform:none;letter-spacing:0;font-weight:400}
 .evgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
-.evc{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.evc{background:var(--surface);border:1.5px solid var(--line);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:10px;min-width:0}
 .evc.draft{border-style:dashed}
-.evc h3{font-family:var(--f-display);font-size:22px;line-height:1.1;margin:0;text-transform:uppercase;text-wrap:balance}
+.evc h3{font-family:var(--f-display);font-weight:800;font-size:28px;line-height:1;margin:0;text-transform:uppercase;text-wrap:balance}
 .evc .em{font-size:14px;color:var(--muted);display:flex;flex-direction:column;gap:2px}
 .evc .em b{color:var(--ink);font-weight:600}
 .evc .chips{display:flex;flex-wrap:wrap;gap:6px}
@@ -236,25 +261,20 @@ table.dash tr:hover td{background:var(--sunk)}
   .off .hd{display:none}
 }
 .credit{max-width:1180px;margin:0 auto;padding-inline:16px;padding-block:0 28px;text-align:center;font-size:12px;color:var(--muted);letter-spacing:.04em}
-.credit b{font-family:var(--f-display);font-size:13px;letter-spacing:.12em;color:var(--ink)}
+.credit b{font-family:var(--f-display);font-weight:800;font-size:15px;letter-spacing:.1em;color:var(--ink)}
+.flg{width:30px;height:20px;border-radius:2px;object-fit:cover;box-shadow:0 0 0 1px rgba(15,29,51,.2);vertical-align:-4px;margin-right:8px}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
 
-<header class="band">
+<header class="band" id="hero">
   <div class="band-in">
-    <div class="band-top">
-      <div>
-        <div class="eyebrow">Borang O-2 · Malaysia Volleyball Association</div>
-        <h1 id="ev-title">Kejohanan Bola Tampar Remaja B16 Malaysia 2026</h1>
-        <div class="meta" id="ev-meta"><span><b>14–18 Nov 2026</b></span><span>Kota Kinabalu, Sabah</span><span>Tarikh tutup borang: <b>1 Okt 2026</b></span></div>
-      </div>
-      <div class="side">
-        <div class="clock" aria-live="off"><div class="t"><span class="live" aria-hidden="true"></span><span id="clk-t">--:--:--</span></div><div class="d" id="clk-d"></div><div class="c" id="clk-c"></div></div>
-        <div class="who" id="who"><b>Memuatkan…</b>Menyemak akses anda</div>
-      </div>
-    </div>
-    <nav class="tabs" role="tablist" id="tabs">
-    </nav>
+    <div class="band-top"><div class="org">Malaysia Volleyball Association · Pendaftaran Borang O-2</div><div class="who" id="who"><b>Memuatkan…</b>Menyemak akses anda</div></div>
+    <div class="brand"><img class="crest" src="../mava-logo.png" alt="Logo Persatuan Bola Tampar Malaysia (MAVA)" width="235" height="280">
+      <div style="min-width:0"><h1 id="ev-title">Pendaftaran Kejohanan Bola Tampar</h1><div class="facts" id="ev-meta"></div></div></div>
+    <div class="court" aria-live="off"><i class="att l"></i><i class="att r"></i><i class="net"></i><span class="ball" aria-hidden="true"></span>
+      <div class="count"><b id="clk-n">–</b><span id="clk-c"></span></div>
+      <div class="side"><b id="clk-t">--:--:--</b><span id="clk-d"></span></div></div>
+    <nav class="tabs" role="tablist" id="tabs"></nav>
   </div>
 </header>
 
@@ -307,12 +327,13 @@ function regStatusText(c=cfg){const st=regState(c);if(c.mode==="closed")return"D
   return`Dibuka sehingga ${fmtDeadline(c)} (${leftText(deadlineDate(c)-Date.now())} lagi)`}
 function stateChip(c){const st=regState(c);if(!c.visible)return`<span class="chip mute">Draf · belum dikongsi</span>`;
   return st==="closed"?`<span class="chip bad"><i class="dot"></i>Ditutup</span>`:st==="late"?`<span class="chip bad"><i class="dot"></i>Lewat · denda</span>`:st==="soon"?`<span class="chip warn"><i class="dot"></i>Tutup tidak lama lagi</span>`:`<span class="chip ok"><i class="dot"></i>Dibuka</span>`}
-function applyCfg(){if(!evId){EVENT_YEAR=new Date().getFullYear();$("#ev-title").textContent="Pendaftaran Kejohanan Bola Tampar";
-    $("#ev-meta").innerHTML=`<span>${isAdmin?"Cipta, urus dan kongsi kejohanan kepada pengurus pasukan":"Pilih kejohanan untuk mendaftar pasukan anda"}</span>`;document.title="Pendaftaran Kejohanan";tick();return}
+function titleHTML(t){const m=String(t).match(/^(.*\S)\s+((?:\S*\d\S*\s+)?(?:19|20)\d{2})$/);return m?`${esc(m[1])} <span class="yr">${esc(m[2])}</span>`:esc(t)}
+function applyCfg(){if(!evId){EVENT_YEAR=new Date().getFullYear();$("#ev-title").innerHTML=`Pendaftaran Kejohanan <span class="yr">Bola Tampar</span>`;
+    $("#ev-meta").innerHTML=`<span><small>Untuk</small><b>${isAdmin?"Cipta, urus & kongsi kejohanan":"Pengurus pasukan & urus setia"}</b></span><span><small>Borang</small><b>O-2 · gambar pasport · PDF</b></span>`;document.title="Pendaftaran Kejohanan";tick();return}
   EVENT_YEAR=+(cfg.start||"").slice(0,4)||new Date().getFullYear();ELIG_YEAR=cfg.eligYear;
-  $("#ev-title").textContent=cfg.title||"Kejohanan tanpa nama";
+  $("#ev-title").innerHTML=titleHTML(cfg.title||"Kejohanan tanpa nama");
   const st=regState(cfg);
-  $("#ev-meta").innerHTML=`<span><b>${esc(fmtRange(cfg,"short"))}</b></span><span>${esc(cfg.venue||"Tempat belum ditetapkan")}</span><span>Tarikh tutup borang: <b>${esc(cfg.mode==="open"?"Tiada had":fmtDeadline())}</b>${st==="closed"?' <span class="chip bad" style="margin-left:4px">Ditutup</span>':st==="late"?' <span class="chip bad" style="margin-left:4px">Lewat · denda</span>':""}</span>`;
+  $("#ev-meta").innerHTML=`<span><small>Kejohanan</small><b>${esc(fmtRange(cfg))}</b></span><span><small>Tempat</small><b>${esc(cfg.venue||"Belum ditetapkan")}</b></span><span><small>Tarikh tutup borang</small><b>${esc(cfg.mode==="open"?"Tiada had":fmtDeadline(cfg,"long"))}</b>${st==="closed"?'<span class="chip bad">Ditutup</span>':st==="late"?'<span class="chip bad">Lewat · denda</span>':""}</span>`;
   document.title=cfg.title&&cfg.title.length<=48?cfg.title:"Pendaftaran Kejohanan";tick()}
 const STATES = [["Johor","JHR"],["Kedah","KDH"],["Kelantan","KTN"],["Melaka","MLK"],["Negeri Sembilan","NSN"],["Pahang","PHG"],["Perak","PRK"],["Perlis","PLS"],["Pulau Pinang","PNG"],["Sabah","SBH"],["Sarawak","SWK"],["Selangor","SGR"],["Terengganu","TRG"],["W.P. Kuala Lumpur","KUL"],["W.P. Labuan","LBN"],["W.P. Putrajaya","PJY"]];
 const OFFICIALS = [["manager","Pengurus Pasukan","Team Manager"],["coach","Ketua Jurulatih","Head Coach"],["asst1","Penolong Jurulatih 1","Assistant Coach 1"],["asst2","Penolong Jurulatih 2","Assistant Coach 2"],["therapist","Ahli Terapi / Jurulatih Fizikal","Therapist / Trainer"],["referee","Pengadil","Referee"]];
@@ -446,7 +467,7 @@ function setSaveState(t){const el=$("#savestate");if(el)el.textContent=t}
 function renderWho(){const w=$("#who");if(!sess){w.innerHTML=`<b>Belum log masuk</b>Pengurus pasukan & urus setia`;return}
   const lbl=sess.role==="super"?"Super Admin":sess.role==="admin"?"Urus Setia Kejohanan":("Pengurus Pasukan · "+esc(sess.code));
   w.innerHTML=`<b>${lbl}</b>${sess.role==="team"&&sess.label?esc(sess.label)+" · ":""}<button class="back" id="logout" style="color:var(--yellow)">Log keluar</button>`;$("#logout").onclick=async()=>{if(dirty)await save();logout()}}
-function renderTabs(){const n=$("#tabs");let h="";const T=(id,label,sel)=>`<button class="tab" role="tab" id="${id}" aria-selected="${sel}">${label}</button>`;
+function renderTabs(){$("#hero").classList.toggle("compact",!!sess);const n=$("#tabs");let h="";const T=(id,label,sel)=>`<button class="tab" role="tab" id="${id}" aria-selected="${sel}">${label}</button>`;
   if(!sess)h=T("tab-login","Log Masuk",true);
   else if(sess.role==="team")h=T("tab-form","Borang Pasukan",true);
   else if(!evId)h=T("tab-super","Semua Kejohanan",true);
@@ -734,10 +755,12 @@ function bindSet(){const f=$("#setform");updatePrev();
     try{await rpc("kj_event_delete",{p_event:evId,p_pin:sess.pin});events.delete(evId);evId=null;applyCfg();await loadSuper();view="super";renderTabs();render();toast("Kejohanan dipadam")}catch(err){toast(err.message)}})}
 
 /* ---------- team access codes & PINs (admin) ---------- */
+const ISO={JHR:"01",KDH:"02",KTN:"03",MLK:"04",NSN:"05",PHG:"06",PNG:"07",PRK:"08",PLS:"09",SGR:"10",TRG:"11",SBH:"12",SWK:"13",KUL:"14",LBN:"15",PJY:"16"};
+const flag=c=>ISO[c]?`<img class="flg" src="../flags/MY-${ISO[c]}.svg" alt="" width="30" height="20">`:"";
 const genPin=()=>String(Math.floor(100000+Math.random()*900000));
 function accHTML(){const have=new Set(accList.map(a=>a.code));const missing=STATES.filter(s=>!have.has(s[1]));
   return`${newPins.length?`<section class="sec" style="border-color:var(--yellow)"><div class="sec-h"><h2>PIN Baharu: Salin Sekarang</h2><p>PIN hanya dipaparkan sekali. Simpan atau hantar kepada pengurus pasukan sekarang.</p></div>
-    <div class="sec-b share"><div class="tbl-wrap"><table class="dash" style="min-width:420px"><thead><tr><th>Pasukan</th><th>Kod</th><th>PIN</th></tr></thead><tbody>${newPins.map(p=>`<tr><td class="tname">${esc(p.label)}</td><td class="mono">${esc(p.code)}</td><td class="mono" style="font-size:16px;font-weight:700">${esc(p.pin)}</td></tr>`).join("")}</tbody></table></div>
+    <div class="sec-b share"><div class="tbl-wrap"><table class="dash" style="min-width:420px"><thead><tr><th>Pasukan</th><th>Kod</th><th>PIN</th></tr></thead><tbody>${newPins.map(p=>`<tr><td class="tname">${flag(p.code)}${esc(p.label)}</td><td class="mono">${esc(p.code)}</td><td class="mono" style="font-size:16px;font-weight:700">${esc(p.pin)}</td></tr>`).join("")}</tbody></table></div>
      <textarea id="np-text" readonly>${esc(newPins.map(p=>`${p.label} (${cfg.title})\nPautan: ${shareLink()}\nKod pasukan: ${p.code}\nPIN: ${p.pin}`).join("\n\n"))}</textarea>
      <div class="actions"><button class="btn primary" type="button" id="np-copy">Salin semua</button><button class="btn" type="button" id="np-clear">Selesai, sembunyikan PIN</button></div></div></section>`:""}
    <section class="sec"><div class="sec-h"><h2>Akses Pasukan</h2><p>${accList.length} pasukan boleh log masuk. ${cfg.visible?"":"<b>Kejohanan masih draf: pasukan belum boleh log masuk.</b>"}</p></div>
@@ -749,7 +772,7 @@ function accHTML(){const have=new Set(accList.map(a=>a.code));const missing=STAT
      <datalist id="states">${STATES.map(s=>`<option value="${s[0]}">`).join("")}</datalist>
     </form>
     ${accList.length?`<div class="tbl-wrap"><table class="dash"><thead><tr><th>Pasukan</th><th>Kod</th><th>Borang</th><th></th></tr></thead><tbody>${accList.map(a=>{const d=allDocs.get(a.code);const st=["L","P"].map(k=>d?.teams?.[k]?`${SEX[k].ms}: ${d.teams[k].status==="submitted"?"Dihantar":"Draf"}`:"").filter(Boolean).join(" · ");
-      return`<tr><td class="tname">${esc(a.label||"")}</td><td class="mono">${esc(a.code)}</td><td style="color:var(--muted);font-size:13px">${esc(st||"Belum mula")}</td><td style="white-space:nowrap"><button class="btn sm" type="button" data-reset="${esc(a.code)}">PIN baharu</button> <button class="btn sm danger" type="button" data-adel="${esc(a.code)}">Buang akses</button></td></tr>`}).join("")}</tbody></table></div>`:`<div class="empty"><b>Belum ada pasukan</b>Tambah pasukan satu demi satu, atau tambah semua negeri sekaligus.</div>`}
+      return`<tr><td class="tname">${flag(a.code)}${esc(a.label||"")}</td><td class="mono">${esc(a.code)}</td><td style="color:var(--muted);font-size:13px">${esc(st||"Belum mula")}</td><td style="white-space:nowrap"><button class="btn sm" type="button" data-reset="${esc(a.code)}">PIN baharu</button> <button class="btn sm danger" type="button" data-adel="${esc(a.code)}">Buang akses</button></td></tr>`}).join("")}</tbody></table></div>`:`<div class="empty"><b>Belum ada pasukan</b>Tambah pasukan satu demi satu, atau tambah semua negeri sekaligus.</div>`}
    </section>`}
 async function reloadAcc(){const r=await rpc("kj_access_list",A());accList=r.access||[];render()}
 function bindAcc(){
@@ -793,7 +816,7 @@ function dashHTML(){const teams=allTeams();const sub=teams.filter(x=>x.t.status=
    </div>
    ${teams.length?`<div class="tbl-wrap"><table class="dash"><thead><tr><th>Pasukan</th><th>Kategori</th><th>Pemain</th><th>Pegawai</th><th>Semakan</th><th>Status</th><th>Denda</th><th>Kemas kini</th><th></th></tr></thead><tbody>
     ${rows.map(x=>{const iss=teamIssues(x.t);const bad=iss.filter(i=>i[0]==="bad").length,w=iss.length-bad;const offs=OFFICIALS.filter(o=>x.t.officials[o[0]].name.trim()).length;
-     return`<tr><td class="tname">${esc(x.t.team||"(tiada nama)")} <span class="mono" style="color:var(--muted)">${esc(x.t.code)}</span><small>${esc(names[x.id]||"")}${x.t.contact.tel?" · "+esc(x.t.contact.tel):""}</small></td>
+     return`<tr><td class="tname">${flag(x.id)}${esc(x.t.team||"(tiada nama)")} <span class="mono" style="color:var(--muted)">${esc(x.t.code)}</span><small>${esc(names[x.id]||"")}${x.t.contact.tel?" · "+esc(x.t.contact.tel):""}</small></td>
      <td>${SEX[x.key].ms}</td><td>${x.t.players.filter(filled).length}</td><td>${offs}/6</td>
      <td>${bad?`<span class="chip bad">${bad} ralat</span>`:""} ${w?`<span class="chip warn">${w} amaran</span>`:""} ${!iss.length?`<span class="chip ok">Lulus</span>`:""}</td>
      <td>${teamStatusChip(x.t)}</td><td>${teamLate(x.t)?`<button class="chip ${x.t.finePaid?"ok":"bad"}" style="border:0;cursor:pointer" type="button" data-fine="${esc(x.id)}|${x.key}" title="Klik untuk tukar status bayaran">${x.t.finePaid?"Dibayar":"Belum bayar"}</button>`:`<span style="color:var(--muted)">–</span>`}</td><td style="color:var(--muted);font-size:13px">${x.t.updatedAt?new Date(x.t.updatedAt).toLocaleString("ms-MY",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"}):""}</td>
@@ -923,10 +946,11 @@ async function withBusy(btn,fn){const old=btn?.textContent;if(btn){btn.disabled=
 const fT=new Intl.DateTimeFormat("ms-MY",{timeZone:"Asia/Kuala_Lumpur",hour:"2-digit",minute:"2-digit",second:"2-digit",hour12:false});
 const fD=new Intl.DateTimeFormat("ms-MY",{timeZone:"Asia/Kuala_Lumpur",weekday:"long",day:"numeric",month:"long",year:"numeric"});
 function tick(){const n=new Date();$("#clk-t").textContent=fT.format(n).replace(/\./g,":");$("#clk-d").textContent=fD.format(n)+" · MYT";
-  if(!evId||!isDate(cfg.start)){$("#clk-c").textContent=evId?"Tarikh kejohanan belum ditetapkan":"Waktu Malaysia";return}
+  if(!evId||!isDate(cfg.start)){$("#clk-n").textContent=evId?"–":new Intl.DateTimeFormat("ms-MY",{timeZone:"Asia/Kuala_Lumpur",day:"numeric"}).format(n);$("#clk-c").textContent=evId?"Tarikh kejohanan belum ditetapkan":new Intl.DateTimeFormat("ms-MY",{timeZone:"Asia/Kuala_Lumpur",month:"long",year:"numeric"}).format(n);return}
   const EVENT_START=myt(cfg.start),EVENT_END=myt(isDate(cfg.end)?cfg.end:cfg.start,true);const day=86400000,days=Math.ceil((EVENT_START-n)/day);
   const cl=evId+":"+regState();if(lastClosed!==null&&cl!==lastClosed){lastClosed=cl;applyCfg();if(view!=="set"&&!document.activeElement?.matches?.("#main input,#main select"))render()}lastClosed=cl;
-  $("#clk-c").textContent=n>EVENT_END?"Kejohanan telah tamat":n>=EVENT_START?"Kejohanan sedang berlangsung":days<=1?"Kejohanan bermula esok":`${days} hari lagi ke kejohanan`}
+  $("#clk-n").textContent=n>EVENT_END?"✓":n>=EVENT_START?"LIVE":String(Math.max(days,0));
+  $("#clk-c").textContent=n>EVENT_END?"Kejohanan telah tamat":n>=EVENT_START?"Kejohanan sedang berlangsung":days<=1?"hari lagi: bermula esok":"hari lagi ke servis pertama"}
 setInterval(tick,1000);applyCfg();
 window.addEventListener("hashchange",()=>{if(/^#[ea]-[a-z0-9]+$/.test(location.hash))location.reload()});
 boot();
